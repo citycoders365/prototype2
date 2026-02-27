@@ -228,56 +228,66 @@
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
-                height: 100vh;
-                overflow: hidden;
+                min-height: 100vh;
+                height: auto;
+                overflow-x: hidden;
+                overflow-y: auto;
             }
 
             .terminal-side {
                 flex: none;
                 width: 100%;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
                 border-right: none;
-                border-bottom: 2px solid #cbd5e1;
-                padding: 10px 10px 5px 10px;
+                border-bottom: 4px solid #cbd5e1;
+                padding: 20px 15px;
                 box-sizing: border-box;
             }
 
             .terminal-side h2 {
                 margin: 0 0 5px 0 !important;
-                font-size: 1.2rem;
+                font-size: 1.8rem;
+                text-align: center;
             }
 
             .terminal-side small {
-                margin-bottom: 5px !important;
+                margin-bottom: 20px !important;
+                font-size: 1rem;
+                text-align: center;
             }
 
             .plugin-side {
-                flex: 1;
+                flex: none;
                 width: 100%;
-                padding: 10px 15px;
+                padding: 30px 20px;
                 box-sizing: border-box;
-                overflow-y: auto;
+                overflow: visible;
             }
 
             .etm-body {
                 width: 100%;
-                max-width: 280px;
-                padding: 15px;
+                max-width: 380px;
+                padding: 25px;
                 box-sizing: border-box;
             }
 
             .etm-screen {
-                height: 120px;
-                margin-bottom: 15px;
-                padding: 8px;
+                height: 160px;
+                margin-bottom: 20px;
+                padding: 12px;
             }
 
             .screen-line {
-                font-size: 18px;
+                font-size: 22px;
             }
 
             .key {
-                padding: 8px 3px;
-                font-size: 11px;
+                padding: 14px 5px;
+                font-size: 14px;
             }
 
             .header {
