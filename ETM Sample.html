@@ -224,51 +224,108 @@
             padding-left: 8px;
         }
 
-        /* --- MOBILE RESPONSIVENESS --- */
+        /* --- MOBILE RESPONSIVENESS AND COMPACT VIEW --- */
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
-                height: auto;
-                min-height: 100vh;
+                height: 100vh;
+                overflow: hidden;
             }
 
             .terminal-side {
                 flex: none;
                 width: 100%;
                 border-right: none;
-                border-bottom: 3px solid #cbd5e1;
-                padding: 30px 15px;
+                border-bottom: 2px solid #cbd5e1;
+                padding: 10px 10px 5px 10px;
                 box-sizing: border-box;
             }
 
+            .terminal-side h2 {
+                margin: 0 0 5px 0 !important;
+                font-size: 1.2rem;
+            }
+
+            .terminal-side small {
+                margin-bottom: 5px !important;
+            }
+
             .plugin-side {
-                flex: none;
+                flex: 1;
                 width: 100%;
-                padding: 20px 15px;
+                padding: 10px 15px;
                 box-sizing: border-box;
+                overflow-y: auto;
             }
 
             .etm-body {
                 width: 100%;
-                max-width: 320px;
+                max-width: 280px;
+                padding: 15px;
                 box-sizing: border-box;
             }
 
+            .etm-screen {
+                height: 120px;
+                margin-bottom: 15px;
+                padding: 8px;
+            }
+
+            .screen-line {
+                font-size: 18px;
+            }
+
+            .key {
+                padding: 8px 3px;
+                font-size: 11px;
+            }
+
+            .header {
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+            }
+
+            .header h2 {
+                font-size: 1em !important;
+            }
+
             .audit-card {
-                flex-direction: column;
-                gap: 10px !important;
+                padding: 10px;
+                margin-bottom: 10px;
+                flex-direction: row !important;
+                gap: 15px !important;
             }
 
             .audit-card>div {
-                border-left: none !important;
-                border-top: 1px solid #eee;
-                padding-left: 0 !important;
-                padding-top: 10px;
+                border-left: 1px solid #eee !important;
+                border-top: none;
+                padding-left: 15px !important;
+                padding-top: 0 !important;
             }
 
             .audit-card>div:first-child {
-                border-top: none;
-                padding-top: 0;
+                border-left: none !important;
+                padding-left: 0 !important;
+            }
+
+            .stat-val {
+                font-size: 1.1em !important;
+            }
+
+            .live-table {
+                font-size: 0.8em;
+                margin-top: 5px;
+            }
+
+            .live-table td,
+            .live-table th {
+                padding: 4px 0;
+            }
+
+            .log-box {
+                height: 80px;
+                padding: 8px;
+                font-size: 0.75em;
             }
         }
     </style>
