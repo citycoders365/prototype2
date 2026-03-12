@@ -2721,6 +2721,13 @@
                                 bus.std += (tktCount - availableSeats);
                             }
 
+                            // Update drop-off forecast count for this destination
+                            if (bus.dropoffs) {
+                                const dof = bus.dropoffs.find(d => d.stop === dest);
+                                if (dof) { dof.count += tktCount; }
+                                else { bus.dropoffs.push({ stop: dest, eta: '—', count: tktCount }); }
+                            }
+
                             // If currently viewing this bus in live tracking, refresh the UI inline
                             const trackingScreen = document.getElementById('route-tracking');
                             if (trackingScreen && trackingScreen.classList.contains('active')) {
@@ -2743,6 +2750,7 @@
                                     // Refresh dropoff footer context too if needed
                                     const totalOnboard = bus.occ + bus.std;
                                     document.getElementById('dof-total-onboard').textContent = totalOnboard;
+                                    renderDropoffPanel(bus);
                                 }
                             }
                         }
@@ -2772,26 +2780,41 @@
         }
 
         // --- BACKEND POLLING (FastAPI) ---
-        // Periodically fetch live state for PoC bus 'AP-16-1234'
+        // Periodically fetch live state + drop-off counts for PoC bus 'AP-16-1234'
         setInterval(async () => {
             try {
-                const response = await fetch(`${BACKEND_URL}/api/bus_state/AP-16-1234`);
-                if (response.ok) {
-                    const state = await response.json();
+                const [stateRes, dofRes] = await Promise.all([
+                    fetch(`${BACKEND_URL}/api/bus_state/AP-16-1234`),
+                    fetch(`${BACKEND_URL}/api/dropoffs/AP-16-1234`)
+                ]);
 
-                    // We update our local busData representation
-                    let bus = busData.find(b => b.plate === 'AP16Z-4022');
-                    if (bus) {
+                let bus = busData.find(b => b.plate === 'AP16Z-4022');
+                if (bus) {
+                    if (stateRes.ok) {
+                        const state = await stateRes.json();
                         bus.occ = state.occupied_seats;
                         const available = state.total_capacity - state.occupied_seats;
                         bus.emp = available > 0 ? available : 0;
                         bus.std = available < 0 ? Math.abs(available) : 0;
+                    }
 
-                        // If tracking screen is open, update UI directly
-                        const trackingScreen = document.getElementById('route-tracking');
-                        if (trackingScreen && trackingScreen.classList.contains('active')) {
-                            updateLiveOccupancy(bus);
+                    if (dofRes.ok) {
+                        const dofData = await dofRes.json();
+                        if (dofData.dropoffs && dofData.dropoffs.length > 0) {
+                            // Overwrite counts with live DB values per stop
+                            dofData.dropoffs.forEach(live => {
+                                const existing = bus.dropoffs.find(d => d.stop === live.stop);
+                                if (existing) { existing.count = live.count; }
+                                else { bus.dropoffs.push({ stop: live.stop, eta: '—', count: live.count }); }
+                            });
                         }
+                    }
+
+                    // If tracking screen is open, refresh both occupancy and drop-off panel
+                    const trackingScreen = document.getElementById('route-tracking');
+                    if (trackingScreen && trackingScreen.classList.contains('active')) {
+                        updateLiveOccupancy(bus);
+                        renderDropoffPanel(bus);
                     }
                 }
             } catch (err) {

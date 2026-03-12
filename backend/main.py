@@ -83,4 +83,21 @@ async def get_bus_state(bus_id: str):
         print(f"Error fetching bus state: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@app.get("/api/dropoffs/{bus_id}")
+async def get_dropoffs(bus_id: str):
+    """
+    Returns per-stop drop-off counts aggregated from all ticket_events for this bus.
+    Used by the Passenger PWA to display the drop-off forecast panel.
+    """
+    try:
+        res = supabase.table("ticket_events").select("destination, ticket_count").eq("bus_id", bus_id).execute()
+        dropoffs: dict = {}
+        for row in res.data:
+            dest = row["destination"]
+            dropoffs[dest] = dropoffs.get(dest, 0) + row["ticket_count"]
+        return {"dropoffs": [{"stop": k, "count": v} for k, v in dropoffs.items()]}
+    except Exception as e:
+        print(f"Error fetching dropoffs: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 # Run via: uvicorn main:app --reload

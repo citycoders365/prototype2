@@ -572,6 +572,14 @@
                     })
                 }).catch(err => console.error("Error sending ticket to backend:", err));
 
+                // -> Notify index.html on the same browser via localStorage
+                localStorage.setItem('etmNewEvent', JSON.stringify({
+                    destination: destName,
+                    origin: srcName,
+                    tickets: tktCount,
+                    timestamp: Date.now()
+                }));
+
                 // C. Log
                 addLog(`TICKET: ${tktCount}x [${srcName} -> ${destName}]. Rev: ₹${price}`);
 
