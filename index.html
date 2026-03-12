@@ -2730,6 +2730,13 @@
                                 bus.std += (tktCount - availableSeats);
                             }
 
+                            // Update drop-off forecast count for this destination
+                            if (bus.dropoffs) {
+                                const dof = bus.dropoffs.find(d => d.stop === dest);
+                                if (dof) { dof.count += tktCount; }
+                                else { bus.dropoffs.push({ stop: dest, eta: '—', count: tktCount }); }
+                            }
+
                             // If currently viewing this bus in live tracking, refresh the UI inline
                             const trackingScreen = document.getElementById('route-tracking');
                             if (trackingScreen && trackingScreen.classList.contains('active')) {
@@ -2780,7 +2787,7 @@
         }
 
         // --- BACKEND POLLING (FastAPI) ---
-        // Periodically fetch live state for PoC bus 'AP-16-1234'
+        // Periodically fetch live state + drop-off counts for PoC bus 'AP-16-1234'
         setInterval(async () => {
             try {
                 const response = await fetch(`${BACKEND_URL}/api/bus_state/AP-16-1234`);
