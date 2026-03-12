@@ -22,3 +22,12 @@ CREATE TABLE live_bus_state (
 INSERT INTO live_bus_state (bus_id, total_capacity, occupied_seats)
 VALUES ('AP-16-1234', 60, 0)
 ON CONFLICT (bus_id) DO NOTHING;
+
+-- 4. Create the `bus_dropoffs` table for tracking real-time drop-offs
+CREATE TABLE bus_dropoffs (
+    bus_id TEXT NOT NULL,
+    stop_name TEXT NOT NULL,
+    dropoff_count INT NOT NULL DEFAULT 0,
+    last_updated TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (bus_id, stop_name)
+);

@@ -1,0 +1,4 @@
+--- TravelloBus CV Analysis ---
+Total People Detected    : 7
+Estimated STANDING        : 3
+Estimated SITTING         : 4

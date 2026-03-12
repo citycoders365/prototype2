@@ -60,6 +60,22 @@ async def issue_ticket(event: TicketEvent):
             "last_updated": "now()"
         }).eq("bus_id", event.bus_id).execute()
 
+        # 4. Upsert into bus_dropoffs
+        # First check if currently exists
+        dropoff_res = supabase.table("bus_dropoffs").select("dropoff_count").eq("bus_id", event.bus_id).eq("stop_name", event.destination).execute()
+        current_dropoff_count = 0
+        if dropoff_res.data:
+            current_dropoff_count = dropoff_res.data[0]["dropoff_count"]
+        
+        new_dropoff_count = current_dropoff_count + event.ticket_count
+        
+        supabase.table("bus_dropoffs").upsert({
+            "bus_id": event.bus_id,
+            "stop_name": event.destination,
+            "dropoff_count": new_dropoff_count,
+            "last_updated": "now()"
+        }).execute()
+
         return {"status": "success", "message": f"{event.ticket_count} tickets issued"}
 
     except Exception as e:
@@ -77,7 +93,21 @@ async def get_bus_state(bus_id: str):
         if not res.data:
             raise HTTPException(status_code=404, detail="Bus not found")
             
-        return res.data[0]
+        state = res.data[0]
+        
+        # Get dropoffs
+        dropoffs_res = supabase.table("bus_dropoffs").select("stop_name, dropoff_count").eq("bus_id", bus_id).execute()
+        
+        # Format dropoffs for the frontend
+        # The frontend expects objects like { stop: string, eta: string, count: int }
+        dropoffs = [
+            {"stop": d["stop_name"], "count": d["dropoff_count"], "eta": "N/A"} 
+            for d in dropoffs_res.data
+        ]
+        
+        state["dropoffs"] = dropoffs
+        
+        return state
         
     except Exception as e:
         print(f"Error fetching bus state: {e}")

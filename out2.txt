@@ -1,0 +1,9 @@
+﻿Trying password: Travellobus@0821
+Failed with password Travellobus@0821: connection to server at "aws-1-ap-northeast-2.pooler.supabase.com" (3.39.47.126), port 5432 failed: FATAL:  Circuit breaker open: Too many authentication errors
+connection to server at "aws-1-ap-northeast-2.pooler.supabase.com" (3.39.47.126), port 5432 failed: FATAL:  Circuit breaker open: Too many authentication errors
+
+Trying password: [Travellobus@0821]
+Failed with password [Travellobus@0821]: connection to server at "aws-1-ap-northeast-2.pooler.supabase.com" (3.39.47.126), port 5432 failed: FATAL:  Circuit breaker open: Too many authentication errors
+connection to server at "aws-1-ap-northeast-2.pooler.supabase.com" (3.39.47.126), port 5432 failed: FATAL:  Circuit breaker open: Too many authentication errors
+
+Could not connect with either password.
