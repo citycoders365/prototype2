@@ -600,6 +600,45 @@
             box.prepend(div);
         }
 
+        // --- 6. BACKGROUND POLLING ---
+        // Fetch accurate counts directly from the backend to ensure deletes natively sync
+        setInterval(async () => {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/bus_state/AP-16-1234`);
+                if (response.ok) {
+                    const state = await response.json();
+                    
+                    // Update global UI ticket count based on the dynamic database truth
+                    totalProcessed = state.occupied_seats;
+                    totalRevenue = totalProcessed * 35; // Assuming static ticket price 
+                    document.getElementById('totalTkts').innerText = totalProcessed;
+                    document.getElementById('totalRev').innerText = "₹" + totalRevenue;
+                    
+                    // Zero out local drop counts safely
+                    for (let s in dropCounts) { dropCounts[s] = 0; }
+                    
+                    // Override with accurate backend sums 
+                    if (state.dropoffs && Array.isArray(state.dropoffs)) {
+                        state.dropoffs.forEach(bd => {
+                            if(dropCounts[bd.stop] !== undefined) {
+                                dropCounts[bd.stop] = bd.count;
+                            }
+                        });
+                    }
+                    
+                    // Re-render UI table badges immediately
+                    routeData.stops.forEach((stop, index) => {
+                        const badge = document.getElementById(`drop-${index}`);
+                        if (badge) {
+                            badge.innerText = dropCounts[stop];
+                        }
+                    });
+                }
+            } catch (err) {
+                // Silently bypass on failure
+            }
+        }, 3000);
+
         initTable();
     </script>
 </body>

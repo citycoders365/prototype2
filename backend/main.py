@@ -44,38 +44,6 @@ async def issue_ticket(event: TicketEvent):
             "ticket_count": event.ticket_count
         }).execute()
 
-        # 2. Fetch the current bus state
-        # In a real app we would use SQL functions or RPCs to prevent race conditions
-        bus_state_res = supabase.table("live_bus_state").select("occupied_seats").eq("bus_id", event.bus_id).execute()
-        
-        if not bus_state_res.data:
-            raise HTTPException(status_code=404, detail="Bus ID not found in live state table")
-            
-        current_occupied = bus_state_res.data[0]["occupied_seats"]
-        new_occupied = current_occupied + event.ticket_count
-
-        # 3. Update the bus state with new occupied seats
-        supabase.table("live_bus_state").update({
-            "occupied_seats": new_occupied,
-            "last_updated": "now()"
-        }).eq("bus_id", event.bus_id).execute()
-
-        # 4. Upsert into bus_dropoffs
-        # First check if currently exists
-        dropoff_res = supabase.table("bus_dropoffs").select("dropoff_count").eq("bus_id", event.bus_id).eq("stop_name", event.destination).execute()
-        current_dropoff_count = 0
-        if dropoff_res.data:
-            current_dropoff_count = dropoff_res.data[0]["dropoff_count"]
-        
-        new_dropoff_count = current_dropoff_count + event.ticket_count
-        
-        supabase.table("bus_dropoffs").upsert({
-            "bus_id": event.bus_id,
-            "stop_name": event.destination,
-            "dropoff_count": new_dropoff_count,
-            "last_updated": "now()"
-        }).execute()
-
         return {"status": "success", "message": f"{event.ticket_count} tickets issued"}
 
     except Exception as e:
@@ -88,21 +56,32 @@ async def get_bus_state(bus_id: str):
     Called by the Passenger PWA to get the current live occupancy.
     """
     try:
-        res = supabase.table("live_bus_state").select("total_capacity, occupied_seats").eq("bus_id", bus_id).execute()
+        # Fetch static info (e.g. total_capacity) from live_bus_state
+        res = supabase.table("live_bus_state").select("total_capacity").eq("bus_id", bus_id).execute()
         
         if not res.data:
             raise HTTPException(status_code=404, detail="Bus not found")
             
         state = res.data[0]
         
-        # Get dropoffs
-        dropoffs_res = supabase.table("bus_dropoffs").select("stop_name, dropoff_count").eq("bus_id", bus_id).execute()
+        # Calculate dynamic occupancy and dropoffs from ticket_events
+        tickets_res = supabase.table("ticket_events").select("destination, ticket_count").eq("bus_id", bus_id).execute()
+        
+        total_occupied = 0
+        dropoffs_map = {}
+        for row in tickets_res.data:
+            count = row["ticket_count"]
+            dest = row["destination"]
+            total_occupied += count
+            dropoffs_map[dest] = dropoffs_map.get(dest, 0) + count
+            
+        state["occupied_seats"] = total_occupied
         
         # Format dropoffs for the frontend
         # The frontend expects objects like { stop: string, eta: string, count: int }
         dropoffs = [
-            {"stop": d["stop_name"], "count": d["dropoff_count"], "eta": "N/A"} 
-            for d in dropoffs_res.data
+            {"stop": dest, "count": count, "eta": "N/A"} 
+            for dest, count in dropoffs_map.items()
         ]
         
         state["dropoffs"] = dropoffs
