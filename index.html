@@ -2704,10 +2704,14 @@
                     const data = JSON.parse(e.newValue);
                     const tktCount = parseInt(data.tickets) || 0;
                     const dest = data.destination || '';
+                    const busPlate = data.bus_plate || '';
 
                     if (tktCount > 0) {
-                        // Find a bus that has this destination in its dropoffs, or default to the first bus
-                        let bus = busData.find(b => b.dropoffs && b.dropoffs.some(d => d.stop === dest));
+                        // Find the exactly matching bus by plate using the new ETM payload, 
+                        // fallback to destination inference, or default to main bus
+                        let bus;
+                        if (busPlate) bus = busData.find(b => b.plate === busPlate);
+                        if (!bus) bus = busData.find(b => b.dropoffs && b.dropoffs.some(d => d.stop === dest));
                         if (!bus) bus = busData.find(b => b.plate === 'AP16Z-4022');
 
                         if (bus) {

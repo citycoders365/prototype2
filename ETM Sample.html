@@ -443,9 +443,14 @@
         const routeData = {
             stops: ["VIJAYAWADA PNBS", "TADEPALLI", "MANGALAGIRI", "NAMBURU", "PEDDAKAKANI", "GUNTUR RTC"]
         };
+        const busList = [
+            { id: "AP-16-1234", plate: "AP16Z-4022" },
+            { id: "AP-16-5678", plate: "TS09A-1234" }
+        ];
 
         // --- 2. STATE VARIABLES ---
-        let step = 1; // 1: Source, 2: Destination, 3: Qty
+        let step = 0; // 0: Bus, 1: Source, 2: Destination, 3: Qty
+        let currentBusIdx = 0;
         let currentSourceIdx = 0;
         let currentDestIdx = 1;
         let tktCount = 1;
@@ -473,7 +478,11 @@
 
         // --- 4. NAVIGATION LOGIC ---
         function navigate(dir) {
-            if (step === 1) { // SELECT SOURCE
+            if (step === 0) { // SELECT BUS
+                if (dir === 'down') currentBusIdx = (currentBusIdx + 1) % busList.length;
+                else currentBusIdx = (currentBusIdx - 1 + busList.length) % busList.length;
+            }
+            else if (step === 1) { // SELECT SOURCE
                 if (dir === 'down') currentSourceIdx = (currentSourceIdx + 1) % routeData.stops.length;
                 else currentSourceIdx = (currentSourceIdx - 1 + routeData.stops.length) % routeData.stops.length;
             }
@@ -497,7 +506,10 @@
         }
 
         function confirmSelection() {
-            if (step === 1) {
+            if (step === 0) {
+                step = 1;
+                updateScreen();
+            } else if (step === 1) {
                 // Cannot select the LAST stop as source
                 if (currentSourceIdx >= routeData.stops.length - 1) {
                     alert("Cannot select last stop as boarding point!");
@@ -520,17 +532,27 @@
         }
 
         function updateScreen() {
+            const line1 = document.getElementById('line1');
             const line2 = document.getElementById('line2');
             const selection = document.getElementById('selection');
             const line3 = document.getElementById('line3');
+            
+            const activeBus = busList[currentBusIdx];
 
-            if (step === 1) {
+            if (step === 0) {
+                line1.innerText = "SETUP:";
+                line2.innerText = "SELECT BUS:";
+                selection.innerText = activeBus.plate;
+            } else if (step === 1) {
+                line1.innerText = "BUS: " + activeBus.plate;
                 line2.innerText = "SELECT SOURCE:";
                 selection.innerText = routeData.stops[currentSourceIdx];
             } else if (step === 2) {
+                line1.innerText = "BUS: " + activeBus.plate;
                 line2.innerText = "SELECT DEST:";
                 selection.innerText = routeData.stops[currentDestIdx];
             } else if (step === 3) {
+                line1.innerText = "BUS: " + activeBus.plate;
                 line2.innerText = "ENTER QTY:";
                 selection.innerText = tktCount;
             }
@@ -560,12 +582,14 @@
                     setTimeout(() => badge.style.backgroundColor = "#fee2e2", 500);
                 }
 
+                const activeBus = busList[currentBusIdx];
+
                 // -> Send Payload to FastAPI Backend
                 fetch(`${BACKEND_URL}/api/issue_ticket`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        bus_id: 'AP-16-1234', // Hardcoded for PoC
+                        bus_id: activeBus.id, // Dynamic based on selection
                         origin: srcName,
                         destination: destName,
                         ticket_count: tktCount
@@ -574,6 +598,8 @@
 
                 // -> Notify index.html on the same browser via localStorage
                 localStorage.setItem('etmNewEvent', JSON.stringify({
+                    bus_id: activeBus.id,
+                    bus_plate: activeBus.plate,
                     destination: destName,
                     origin: srcName,
                     tickets: tktCount,
@@ -581,9 +607,9 @@
                 }));
 
                 // C. Log
-                addLog(`TICKET: ${tktCount}x [${srcName} -> ${destName}]. Rev: ₹${price}`);
+                addLog(`TICKET: ${tktCount}x [${srcName} -> ${destName}] ON ${activeBus.plate}. Rev: ₹${price}`);
 
-                alert(`Success! Printed ${tktCount} ticket(s).`);
+                alert(`Success! Printed ${tktCount} ticket(s) for ${activeBus.plate}.`);
 
                 // Reset to Source Selection
                 step = 1;
@@ -603,8 +629,10 @@
         // --- 6. BACKGROUND POLLING ---
         // Fetch accurate counts directly from the backend to ensure deletes natively sync
         setInterval(async () => {
+            if (step === 0) return; // Do not poll stats until a bus is actively selected!
             try {
-                const response = await fetch(`${BACKEND_URL}/api/bus_state/AP-16-1234`);
+                const activeBusId = busList[currentBusIdx].id;
+                const response = await fetch(`${BACKEND_URL}/api/bus_state/${activeBusId}`);
                 if (response.ok) {
                     const state = await response.json();
                     
