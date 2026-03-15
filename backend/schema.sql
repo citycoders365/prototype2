@@ -18,9 +18,14 @@ CREATE TABLE live_bus_state (
     last_updated TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 3. Insert initial dummy data for the PoC bus
+-- 3. Insert initial dummy data for the PoC buses
 INSERT INTO live_bus_state (bus_id, total_capacity, occupied_seats)
-VALUES ('AP-16-1234', 60, 0)
+VALUES 
+    ('AP-16-1234', 60, 0),
+    ('AP-16-4023', 50, 0),
+    ('AP-16-4024', 50, 0),
+    ('AP-16-4025', 50, 0),
+    ('AP-16-4026', 50, 0)
 ON CONFLICT (bus_id) DO NOTHING;
 
 -- 4. Create the `bus_dropoffs` table for tracking real-time drop-offs

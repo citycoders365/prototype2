@@ -2319,7 +2319,7 @@
 
         const busData = [
             {
-                plate: 'AP16Z-4022', time: '08:00 AM', eta: '2 mins', occ: 42, emp: 8, std: 12, startIdx: 9,
+                id: 'AP-16-1234', plate: 'AP16Z-4022', time: '08:00 AM', eta: '2 mins', occ: 42, emp: 8, std: 12, startIdx: 9,
                 dropoffs: [
                     { stop: 'TADEPALLI', eta: '2 min', count: 8 },
                     { stop: 'MANGALAGIRI', eta: '10 min', count: 11 },
@@ -2329,7 +2329,7 @@
                 ]
             },
             {
-                plate: 'AP16Z-4023', time: '08:15 AM', eta: '7 mins', occ: 20, emp: 30, std: 0, startIdx: 6,
+                id: 'AP-16-4023', plate: 'AP16Z-4023', time: '08:15 AM', eta: '7 mins', occ: 20, emp: 30, std: 0, startIdx: 6,
                 dropoffs: [
                     { stop: 'MANGALAGIRI', eta: '7 min', count: 5 },
                     { stop: 'NAMBURU', eta: '16 min', count: 7 },
@@ -2338,7 +2338,7 @@
                 ]
             },
             {
-                plate: 'AP16Z-4024', time: '08:30 AM', eta: '15 mins', occ: 50, emp: 0, std: 25, startIdx: 4,
+                id: 'AP-16-4024', plate: 'AP16Z-4024', time: '08:30 AM', eta: '15 mins', occ: 50, emp: 0, std: 25, startIdx: 4,
                 dropoffs: [
                     { stop: 'NAMBURU', eta: '15 min', count: 18 },
                     { stop: 'PEDDAKAKANI', eta: '26 min', count: 14 },
@@ -2346,7 +2346,7 @@
                 ]
             },
             {
-                plate: 'AP16Z-4025', time: '08:45 AM', eta: '22 mins', occ: 15, emp: 35, std: 0, startIdx: 2,
+                id: 'AP-16-4025', plate: 'AP16Z-4025', time: '08:45 AM', eta: '22 mins', occ: 15, emp: 35, std: 0, startIdx: 2,
                 dropoffs: [
                     { stop: 'TADEPALLI', eta: '22 min', count: 4 },
                     { stop: 'MANGALAGIRI', eta: '30 min', count: 5 },
@@ -2355,7 +2355,7 @@
                 ]
             },
             {
-                plate: 'AP16Z-4026', time: '09:00 AM', eta: '30 mins', occ: 30, emp: 20, std: 5, startIdx: 0,
+                id: 'AP-16-4026', plate: 'AP16Z-4026', time: '09:00 AM', eta: '30 mins', occ: 30, emp: 20, std: 5, startIdx: 0,
                 dropoffs: [
                     { stop: 'VIJAYAWADA PNBS', eta: '30 min', count: 9 },
                     { stop: 'TADEPALLI', eta: '38 min', count: 8 },
@@ -2791,20 +2791,28 @@
         }
 
         // --- BACKEND POLLING (FastAPI) ---
-        // Periodically fetch live state + drop-off counts for PoC bus 'AP-16-1234'
+        // Periodically fetch live state + drop-off counts for all known active buses
         setInterval(async () => {
             try {
-                const response = await fetch(`${BACKEND_URL}/api/bus_state/AP-16-1234`);
-                if (response.ok) {
-                    const state = await response.json();
+                // Filter only buses that have an ID configured for tracking
+                const activeBuses = busData.filter(b => b.id);
+                
+                // Fetch states in parallel
+                const fetchPromises = activeBuses.map(b => fetch(`${BACKEND_URL}/api/bus_state/${b.id}`));
+                const responses = await Promise.all([...fetchPromises].map(p => p.catch(e => e)));
+                
+                let didUpdateUI = false;
 
-                    // We update our local busData representation
-                    let bus = busData.find(b => b.plate === 'AP16Z-4022');
-                    if (bus) {
+                responses.forEach(async (response, idx) => {
+                    if (response instanceof Response && response.ok) {
+                        const state = await response.json();
+                        let bus = activeBuses[idx];
+                        
                         bus.occ = state.occupied_seats;
                         const available = state.total_capacity - state.occupied_seats;
                         bus.emp = available > 0 ? available : 0;
                         bus.std = available < 0 ? Math.abs(available) : 0;
+                        
                         if (state.dropoffs && Array.isArray(state.dropoffs)) {
                             // Merge backend dropoffs. Keep local eta if backend returns 'N/A'
                             state.dropoffs.forEach(bd => {
@@ -2815,15 +2823,26 @@
                             });
                             bus.dropoffs = state.dropoffs;
                         }
-
-                        // If tracking screen is open, update UI directly
+                        
+                        // Check if this updated bus is actively being tracked on-screen right now
                         const trackingScreen = document.getElementById('route-tracking');
                         if (trackingScreen && trackingScreen.classList.contains('active')) {
-                            updateLiveOccupancy(bus);
-                            renderDropoffPanel(bus);
+                            const plateDisplay = document.getElementById('rt-bus-plate-display');
+                            if (plateDisplay && plateDisplay.textContent === bus.plate) {
+                                didUpdateUI = true;
+                                updateLiveOccupancy(bus);
+                                renderDropoffPanel(bus);
+                            }
                         }
                     }
+                });
+                
+                // Optionally refresh admin lists if that screen is active
+                const adminDash = document.getElementById('admin-dashboard');
+                if (adminDash && adminDash.classList.contains('active')) {
+                   renderAdminList(); 
                 }
+
             } catch (err) {
                 // Silently handle errors for the PoC
                 console.error("Backend unavailable to fetch updates:", err);
