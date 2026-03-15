@@ -2436,7 +2436,15 @@
             if (from === to) { alert('Please choose a destination different from your starting location.'); return; }
             navigate('user-results');
             document.getElementById('route-tag').textContent = `🚌 ${from}  →  ${to}`;
+            renderUserList();
+        }
+
+        function renderUserList() {
             const list = document.getElementById('bus-list-container');
+            if (!list) return;
+            const resScreen = document.getElementById('user-results');
+            if (resScreen && !resScreen.classList.contains('active')) return;
+
             list.innerHTML = '';
             busData.forEach(bus => {
                 const d = document.createElement('div');
@@ -2530,20 +2538,21 @@
         function goHome() { navigate(currentRole === 'user' ? 'user-planner' : 'admin-dashboard'); }
 
         // ── ROUTE TRACKING DATA ──
-        const routeStops = [
-            { name: 'VIJAYAWADA PNBS', arr: '08:00', dep: '08:01', status: 'passed' },
-            { name: 'TADEPALLI', arr: '08:15', dep: '08:16', status: 'passed' },
-            { name: 'MANGALAGIRI', arr: '08:30', dep: '08:31', status: 'passed' },
-            { name: 'NAMBURU', arr: '08:45', dep: '08:46', status: 'current' },
-            { name: 'PEDDAKAKANI', arr: '08:55', dep: '08:56', status: 'upcoming' },
-            { name: 'GUNTUR RTC', arr: '09:10', dep: '09:10', status: 'upcoming' }
+        const routeStopsTemplate = [
+            { name: 'VIJAYAWADA PNBS', offset: 0 },
+            { name: 'TADEPALLI', offset: 15 },
+            { name: 'MANGALAGIRI', offset: 30 },
+            { name: 'NAMBURU', offset: 45 },
+            { name: 'PEDDAKAKANI', offset: 55 },
+            { name: 'GUNTUR RTC', offset: 70 }
         ];
 
         function renderRouteTimeline(busObj) {
             const container = document.getElementById('rt-timeline-stops');
             container.innerHTML = '';
-            routeStops.forEach((stop, idx) => {
-                const isLast = idx === routeStops.length - 1;
+            if (!busObj.dynamicStops) return;
+            busObj.dynamicStops.forEach((stop, idx) => {
+                const isLast = idx === busObj.dynamicStops.length - 1;
                 const isCurrent = stop.status === 'current';
                 const isPassed = stop.status === 'passed';
                 const isUpcoming = stop.status === 'upcoming';
@@ -2847,7 +2856,82 @@
                 // Silently handle errors for the PoC
                 console.error("Backend unavailable to fetch updates:", err);
             }
+            
+            // Execute the local dynamic timing routine on this same interval
+            updateTimings();
+            renderUserList();
+
         }, 3000);
+
+        // --- DYNAMIC LIVE TIMING ENGINE ---
+        function initLiveTimings() {
+            const now = Date.now();
+            busData.forEach((bus, i) => {
+                // Spread bus departures around the current time for dynamic feel
+                // Bus 0 started 30 mins ago, Bus 1: 15m ago, Bus 2: Now, etc.
+                let startOffsetMins = (i * 15) - 30; 
+                bus.startTime = new Date(now + startOffsetMins * 60000);
+            });
+            updateTimings();
+        }
+
+        function updateTimings() {
+            const now = Date.now();
+            busData.forEach(bus => {
+                let diffMins = Math.round((bus.startTime.getTime() - now) / 60000);
+                
+                // Update basic schedule strings
+                if (diffMins > 0) {
+                    bus.time = bus.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    bus.eta = diffMins + ' mins';
+                } else {
+                    let passed = Math.abs(diffMins);
+                    bus.time = "Departed";
+                    bus.eta = passed === 0 ? "Now" : (passed > 60 ? `>1 hr ago` : `Left ${passed}m ago`);
+                }
+                
+                // Update dynamic stop timetable
+                bus.dynamicStops = routeStopsTemplate.map(stop => {
+                    let stopTime = new Date(bus.startTime.getTime() + stop.offset * 60000);
+                    let stopDiff = Math.round((stopTime.getTime() - now) / 60000);
+                    let status = stopDiff < -1 ? 'passed' : stopDiff <= 1 ? 'current' : 'upcoming';
+                    
+                    return {
+                        name: stop.name,
+                        arr: stopTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        dep: new Date(stopTime.getTime() + 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        status: status,
+                        etaMins: Math.max(0, stopDiff)
+                    };
+                });
+                
+                // Sync dropoff ETAs mathematically
+                if (bus.dropoffs) {
+                    bus.dropoffs.forEach(dof => {
+                       let s = bus.dynamicStops.find(ds => ds.name === dof.stop);
+                       if (s) dof.eta = s.etaMins + ' min';
+                    });
+                }
+            });
+
+            // Re-render live screens if actively open
+            const trackingScreen = document.getElementById('route-tracking');
+            if (trackingScreen && trackingScreen.classList.contains('active')) {
+                const plateDisplay = document.getElementById('rt-bus-plate-display');
+                if (plateDisplay) {
+                    const activeBus = busData.find(b => b.plate === plateDisplay.textContent);
+                    if (activeBus) {
+                        document.getElementById('info-eta').textContent = activeBus.eta;
+                        document.getElementById('occ-d-eta').textContent = activeBus.eta;
+                        renderDropoffPanel(activeBus);
+                        renderRouteTimeline(activeBus);
+                    }
+                }
+            }
+        }
+
+        // Boot live timing generator on load
+        initLiveTimings();
     </script>
 </body>
 
