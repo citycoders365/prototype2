@@ -2460,6 +2460,9 @@
                     <small style="color:var(--text-muted);">${bus.time}</small>
                     <div style="margin-top:4px;font-size:11px;color:${onTimeColor};font-weight:600;">
                         <i class="fa fa-clock-o"></i> ${bus.onTime}% On-Time
+                        <span style="color: ${bus.emp > 0 ? '#64748b' : '#f87171'}; margin-left:8px; display: inline-block;">
+                            <i class="fa fa-user"></i> ${bus.emp > 0 ? bus.emp + ' Seats' : 'Full / Standing'}
+                        </span>
                     </div>
                 </div>
                 <div style="text-align:right;">
