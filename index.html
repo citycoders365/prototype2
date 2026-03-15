@@ -2319,7 +2319,7 @@
 
         const busData = [
             {
-                id: 'AP-16-1234', plate: 'AP16Z-4022', time: '08:00 AM', eta: '2 mins', occ: 42, emp: 8, std: 12, startIdx: 9,
+                id: 'AP-16-1234', plate: 'AP16Z-4022', time: '08:00 AM', eta: '2 mins', occ: 42, emp: 8, std: 12, startIdx: 9, onTime: 95,
                 dropoffs: [
                     { stop: 'TADEPALLI', eta: '2 min', count: 8 },
                     { stop: 'MANGALAGIRI', eta: '10 min', count: 11 },
@@ -2329,7 +2329,7 @@
                 ]
             },
             {
-                id: 'AP-16-4023', plate: 'AP16Z-4023', time: '08:15 AM', eta: '7 mins', occ: 20, emp: 30, std: 0, startIdx: 6,
+                id: 'AP-16-4023', plate: 'AP16Z-4023', time: '08:15 AM', eta: '7 mins', occ: 20, emp: 30, std: 0, startIdx: 6, onTime: 82,
                 dropoffs: [
                     { stop: 'MANGALAGIRI', eta: '7 min', count: 5 },
                     { stop: 'NAMBURU', eta: '16 min', count: 7 },
@@ -2338,7 +2338,7 @@
                 ]
             },
             {
-                id: 'AP-16-4024', plate: 'AP16Z-4024', time: '08:30 AM', eta: '15 mins', occ: 50, emp: 0, std: 25, startIdx: 4,
+                id: 'AP-16-4024', plate: 'AP16Z-4024', time: '08:30 AM', eta: '15 mins', occ: 50, emp: 0, std: 25, startIdx: 4, onTime: 98,
                 dropoffs: [
                     { stop: 'NAMBURU', eta: '15 min', count: 18 },
                     { stop: 'PEDDAKAKANI', eta: '26 min', count: 14 },
@@ -2346,7 +2346,7 @@
                 ]
             },
             {
-                id: 'AP-16-4025', plate: 'AP16Z-4025', time: '08:45 AM', eta: '22 mins', occ: 15, emp: 35, std: 0, startIdx: 2,
+                id: 'AP-16-4025', plate: 'AP16Z-4025', time: '08:45 AM', eta: '22 mins', occ: 15, emp: 35, std: 0, startIdx: 2, onTime: 76,
                 dropoffs: [
                     { stop: 'TADEPALLI', eta: '22 min', count: 4 },
                     { stop: 'MANGALAGIRI', eta: '30 min', count: 5 },
@@ -2355,7 +2355,7 @@
                 ]
             },
             {
-                id: 'AP-16-4026', plate: 'AP16Z-4026', time: '09:00 AM', eta: '30 mins', occ: 30, emp: 20, std: 5, startIdx: 0,
+                id: 'AP-16-4026', plate: 'AP16Z-4026', time: '09:00 AM', eta: '30 mins', occ: 30, emp: 20, std: 5, startIdx: 0, onTime: 91,
                 dropoffs: [
                     { stop: 'VIJAYAWADA PNBS', eta: '30 min', count: 9 },
                     { stop: 'TADEPALLI', eta: '38 min', count: 8 },
@@ -2450,10 +2450,17 @@
                 const d = document.createElement('div');
                 d.className = 'bus-item';
                 d.onclick = () => openRouteTracking(bus.plate);
+                
+                // Color code the on-time rate
+                let onTimeColor = bus.onTime >= 90 ? '#4ade80' : bus.onTime >= 80 ? '#facc15' : '#f87171';
+                
                 d.innerHTML = `
                 <div>
                     <b>${bus.plate}</b><br>
                     <small style="color:var(--text-muted);">${bus.time}</small>
+                    <div style="margin-top:4px;font-size:11px;color:${onTimeColor};font-weight:600;">
+                        <i class="fa fa-clock-o"></i> ${bus.onTime}% On-Time
+                    </div>
                 </div>
                 <div style="text-align:right;">
                     <span class="eta-badge">${bus.eta}</span><br>
@@ -2647,7 +2654,9 @@
             document.getElementById('info-std').textContent = infoStd;
 
             document.getElementById('info-eta').textContent = bus.eta;
-            document.getElementById('info-lastupdate').textContent = new Date().toLocaleTimeString();
+            
+            // Re-purpose 'info-lastupdate' to show the on-time rate for better visibility, since we are dynamically ticking now
+            document.getElementById('info-lastupdate').innerHTML = `<span style="color:${bus.onTime >= 90 ? '#4ade80' : bus.onTime >= 80 ? '#facc15' : '#f87171'}">${bus.onTime}% On-Time</span>`;
 
             // Populate occupancy summary card
             const total = bus.occ + bus.emp;
