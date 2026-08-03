@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TravelloBus – Smart Real-Time Bus State Platform</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
@@ -2827,8 +2827,8 @@
         });
 
         function updateLiveOccupancy(bus) {
-            const total = bus.occ + bus.emp;
-            const pct = Math.round(bus.occ / total * 100);
+            const total = bus.cap || (bus.occ + bus.emp);
+            const pct = Math.round((Math.min(bus.occ, total)) / total * 100);
 
             if (document.getElementById('occ-card-occ')) document.getElementById('occ-card-occ').textContent = bus.occ;
             if (document.getElementById('occ-card-emp')) document.getElementById('occ-card-emp').textContent = bus.emp;
@@ -2864,6 +2864,7 @@
                         
                         bus.occ = state.occupied_seats;
                         const available = state.total_capacity - state.occupied_seats;
+                        bus.cap = state.total_capacity;
                         bus.emp = available > 0 ? available : 0;
                         bus.std = available < 0 ? Math.abs(available) : 0;
                         
