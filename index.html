@@ -36,9 +36,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
+            min-height: 100vh;
+            min-height: 100dvh;
         }
 
         .app-container {
@@ -89,6 +88,7 @@
             position: absolute;
             flex-direction: column;
             animation: fadeIn 0.3s ease;
+            padding-top: env(safe-area-inset-top);
         }
 
         .active {
@@ -735,7 +735,8 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 65px;
+            height: calc(65px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
             background: white;
             display: none;
             justify-content: space-around;
@@ -829,7 +830,7 @@
 
         #bus-list-container {
             overflow-y: auto;
-            padding-bottom: 80px;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
             flex: 1;
         }
 
@@ -1139,7 +1140,7 @@
             display: none;
             flex: 1;
             overflow-y: auto;
-            padding-bottom: 80px;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
         }
 
         .rt-panel.active {
@@ -1215,7 +1216,7 @@
         }
 
         .rt-stop-info.current-info {
-            padding-bottom: 32px;
+            padding-bottom: calc(32px + env(safe-area-inset-bottom));
         }
 
         .rt-stop-name {
@@ -1586,6 +1587,7 @@
             .app-container {
                 width: min(370px, 96vw);
                 height: min(720px, 96vh);
+                overflow: auto;
             }
         }
 
@@ -1594,20 +1596,11 @@
             .app-container {
                 width: 370px;
                 height: 720px;
+                overflow: auto;
             }
         }
 
-        /* Safe area for notched iPhones */
-        @supports (padding-top: env(safe-area-inset-top)) {
-            @media (max-width: 480px) {
-                .app-container {
-                    padding-top: env(safe-area-inset-top);
-                    padding-bottom: env(safe-area-inset-bottom);
-                    height: 100vh;
-                    height: 100dvh;
-                }
-            }
-        }
+
 
         /* ── Drop-Off Forecast Panel ─────────────────────────── */
         .dof-header-card {
@@ -1896,7 +1889,7 @@
         <!-- ADMIN DASHBOARD -->
         <div id="admin-dashboard" class="screen" style="flex-direction:column;">
             <div class="header"><b>Admin Console</b><i class="fa fa-chart-line"></i></div>
-            <div style="padding:15px; overflow-y:auto; flex:1; padding-bottom:80px;">
+            <div style="padding:15px; overflow-y:auto; flex:1; padding-bottom:calc(80px + env(safe-area-inset-bottom));">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
                     <div style="background:var(--primary); color:white; padding:15px; border-radius:12px;">
                         <small>Total Revenue</small><br><b style="font-size:18px;">₹12,450</b>
@@ -1972,7 +1965,7 @@
                 <b>How TravelloBus Works</b>
                 <span></span>
             </div>
-            <div style="overflow-y:auto;flex:1;padding-bottom:70px;">
+            <div style="overflow-y:auto;flex:1;padding-bottom:calc(70px + env(safe-area-inset-bottom));">
                 <div class="hiw-intro">
                     <h3>End-to-End Architecture</h3>
                     <p>TravelloBus layers three data sources — ETM tickets, GPS hardware, and vision AI — into a single
