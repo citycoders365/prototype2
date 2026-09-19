@@ -1,3 +1,4 @@
+import os
 import psycopg2
 
 def try_connect(pwd):
@@ -17,9 +18,12 @@ def try_connect(pwd):
         return None
 
 if __name__ == "__main__":
-    conn = try_connect("Travellobus@0821")
-    if not conn:
-        conn = try_connect("[Travellobus@0821]")
+    db_password = os.environ.get("DB_PASSWORD")
+    if not db_password:
+        print("Please set the DB_PASSWORD environment variable.")
+        exit(1)
+        
+    conn = try_connect(db_password)
         
     if conn:
         with open('backend/schema.sql', 'r') as f:
