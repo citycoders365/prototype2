@@ -769,44 +769,7 @@
             cursor: pointer;
         }
 
-        .ad-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 11px;
-            display: block;
-        }
 
-        .ad-label {
-            position: absolute;
-            top: 4px;
-            right: 6px;
-            font-size: 9px;
-            color: #94a3b8;
-            font-weight: 700;
-            letter-spacing: 0.8px;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 1px 5px;
-            border-radius: 4px;
-        }
-
-        .ad-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: #94a3b8;
-        }
-
-        .ad-placeholder i {
-            font-size: 22px;
-        }
-
-        .ad-placeholder span {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
 
         /* ===== CLICKABLE BUS CARD ===== */
         .bus-item {
@@ -1860,17 +1823,14 @@
                     <button class="btn-primary" onclick="search()" style="margin-top:10px;">Search Buses</button>
                 </div>
 
-                <!-- AD SLOT — swap AD_IMAGE_SRC in the script config below -->
-                <div class="ad-slot" id="ad-banner" onclick="adClick()">
-                    <span class="ad-label">AD</span>
-                    <div class="ad-placeholder" id="ad-placeholder" style="display:none;">
-                        <i class="fa fa-image"></i>
-                        <span>ADVERTISEMENT</span>
+                <!-- AD PLACEHOLDER -->
+                <div class="ad-slot" id="ad-banner" style="flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; box-sizing:border-box;">
+                    <div style="font-size:14px; font-weight:600; color:#475569; margin-bottom:4px;">
+                        📢 Advertise here &mdash; reach thousands of daily commuters
                     </div>
-                    <img id="ad-img"
-                        src="ad photo.jpg"
-                        alt="Innovesta Ad"
-                        style="display:block;width:100%;height:100%;object-fit:contain;border-radius:inherit;margin:auto;">
+                    <div style="font-size:11px; color:#94a3b8; font-weight:500;">
+                        Ad space
+                    </div>
                 </div>
             </div>
         </div>
@@ -2271,23 +2231,7 @@
         const BACKEND_URL = "https://prototype2-qqw6.onrender.com";
         // ==========================================
 
-        // ── AD CONFIGURATION — paste your image path here ──
-        const AD_IMAGE_SRC = '';  // image embedded directly in img src
-        const AD_LINK = '';   // optional: URL to open on ad click
 
-        // Load ad on init
-        (function initAd() {
-            if (AD_IMAGE_SRC) {
-                const img = document.getElementById('ad-img');
-                const ph = document.getElementById('ad-placeholder');
-                img.src = AD_IMAGE_SRC;
-                img.onload = () => { img.style.display = 'block'; ph.style.display = 'none'; };
-            }
-        })();
-
-        function adClick() {
-            if (AD_LINK) window.open(AD_LINK, '_blank');
-        }
         // ── All Chennai / Veltech area stops ──
         const allStops = [
             'VIJAYAWADA PNBS',
