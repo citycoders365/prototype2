@@ -15,7 +15,7 @@ import threading
 import time
 import uuid
 
-VERSION = "phase2-stage2"
+VERSION = "phase2-stage3"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("travellobus")

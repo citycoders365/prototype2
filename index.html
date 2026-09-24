@@ -2154,7 +2154,7 @@
                     </div>
                     <div class="rt-info-row">
                         <span class="rt-info-label">Route</span>
-                        <span class="rt-info-val">Vijayawada → Guntur</span>
+                        <span class="rt-info-val" id="info-route">Vijayawada → Guntur</span>
                     </div>
                     <div class="rt-info-row">
                         <span class="rt-info-label">Seats Occupied</span>
@@ -2204,6 +2204,9 @@
         const BACKEND_URL = "https://prototype2-qqw6.onrender.com";
         // ==========================================
 
+        // Warm-up: start waking the (possibly sleeping) server while the splash screen shows
+        fetch(`${BACKEND_URL}/api/health`, { cache: 'no-store' }).catch(() => { });
+
 
         // ── All Chennai / Veltech area stops ──
         const allStops = [
@@ -2235,56 +2238,28 @@
                 dropoffs: [] // populated from /api/bus_state
             },
             {
-                id: 'AP-16-4023', plate: 'AP16Z-4023', route: 'vja-gnt', time: '08:15 AM', eta: '7 mins', occ: 20, emp: 30, std: 0, startIdx: 6, onTime: 82,
-                dropoffs: [
-                    { stop: 'MANGALAGIRI', eta: '7 min', count: 5 },
-                    { stop: 'NAMBURU', eta: '16 min', count: 7 },
-                    { stop: 'PEDDAKAKANI', eta: '28 min', count: 4 },
-                    { stop: 'GUNTUR RTC', eta: '40 min', count: 3 }
-                ]
+                id: 'AP-16-4023', plate: 'AP16Z-4023', route: 'vja-gnt', time: '08:15 AM', eta: '7 mins', occ: null, emp: null, std: null, startIdx: 6, onTime: 82,
+                dropoffs: [] // populated from /api/bus_states
             },
             {
-                id: 'AP-16-4024', plate: 'AP16Z-4024', route: 'vja-gnt', time: '08:30 AM', eta: '15 mins', occ: 50, emp: 0, std: 25, startIdx: 4, onTime: 98,
-                dropoffs: [
-                    { stop: 'NAMBURU', eta: '15 min', count: 18 },
-                    { stop: 'PEDDAKAKANI', eta: '26 min', count: 14 },
-                    { stop: 'GUNTUR RTC', eta: '37 min', count: 10 }
-                ]
+                id: 'AP-16-4024', plate: 'AP16Z-4024', route: 'vja-gnt', time: '08:30 AM', eta: '15 mins', occ: null, emp: null, std: null, startIdx: 4, onTime: 98,
+                dropoffs: [] // populated from /api/bus_states
             },
             {
-                id: 'AP-16-4025', plate: 'AP16Z-4025', route: 'vja-gnt', time: '08:45 AM', eta: '22 mins', occ: 15, emp: 35, std: 0, startIdx: 2, onTime: 76,
-                dropoffs: [
-                    { stop: 'TADEPALLI', eta: '22 min', count: 4 },
-                    { stop: 'MANGALAGIRI', eta: '30 min', count: 5 },
-                    { stop: 'NAMBURU', eta: '42 min', count: 4 },
-                    { stop: 'GUNTUR RTC', eta: '70 min', count: 2 }
-                ]
+                id: 'AP-16-4025', plate: 'AP16Z-4025', route: 'vja-gnt', time: '08:45 AM', eta: '22 mins', occ: null, emp: null, std: null, startIdx: 2, onTime: 76,
+                dropoffs: [] // populated from /api/bus_states
             },
             {
-                id: 'AP-16-4026', plate: 'AP16Z-4026', route: 'vja-gnt', time: '09:00 AM', eta: '30 mins', occ: 30, emp: 20, std: 5, startIdx: 0, onTime: 91,
-                dropoffs: [
-                    { stop: 'VIJAYAWADA PNBS', eta: '30 min', count: 9 },
-                    { stop: 'TADEPALLI', eta: '38 min', count: 8 },
-                    { stop: 'MANGALAGIRI', eta: '46 min', count: 6 },
-                    { stop: 'NAMBURU', eta: '57 min', count: 4 },
-                    { stop: 'GUNTUR RTC', eta: '80 min', count: 3 }
-                ]
+                id: 'AP-16-4026', plate: 'AP16Z-4026', route: 'vja-gnt', time: '09:00 AM', eta: '30 mins', occ: null, emp: null, std: null, startIdx: 0, onTime: 91,
+                dropoffs: [] // populated from /api/bus_states
             },
             {
-                id: 'AP-16-5001', plate: 'AP16Z-5001', route: 'gnt-vja', time: '10:00 AM', eta: '10 mins', occ: 15, emp: 35, std: 0, startIdx: 12, onTime: 95,
-                dropoffs: [
-                    { stop: 'PEDDAKAKANI', eta: '10 min', count: 5 },
-                    { stop: 'NAMBURU', eta: '20 min', count: 2 },
-                    { stop: 'VIJAYAWADA PNBS', eta: '45 min', count: 8 }
-                ]
+                id: 'AP-16-5001', plate: 'AP16Z-5001', route: 'gnt-vja', time: '10:00 AM', eta: '10 mins', occ: null, emp: null, std: null, startIdx: 12, onTime: 95,
+                dropoffs: [] // populated from /api/bus_states
             },
             {
-                id: 'AP-16-5002', plate: 'AP16Z-5002', route: 'gnt-vja', time: '10:30 AM', eta: '25 mins', occ: 40, emp: 10, std: 0, startIdx: 10, onTime: 88,
-                dropoffs: [
-                    { stop: 'MANGALAGIRI', eta: '25 min', count: 12 },
-                    { stop: 'TADEPALLI', eta: '35 min', count: 18 },
-                    { stop: 'VIJAYAWADA PNBS', eta: '45 min', count: 10 }
-                ]
+                id: 'AP-16-5002', plate: 'AP16Z-5002', route: 'gnt-vja', time: '10:30 AM', eta: '25 mins', occ: null, emp: null, std: null, startIdx: 10, onTime: 88,
+                dropoffs: [] // populated from /api/bus_states
             }
         ];
 
@@ -2296,6 +2271,7 @@
             document.getElementById(id).classList.add('active');
             document.getElementById('promo-bar').style.display =
                 (id !== 'splash-screen' && id !== 'auth-screen') ? 'flex' : 'none';
+            pollNow(); // fetch live data for the screen that just opened
         }
 
         function selectRole(role) {
@@ -2399,7 +2375,7 @@
                 d.innerHTML = `
                 <div>
                     <b>${bus.plate}</b><br>
-                    <small style="color:var(--text-muted);">${bus.time}</small>
+                    <small style="color:var(--text-muted);">${bus.state ? 'At ' + bus.state.current_stop_name : '—'}</small>
                     <div style="margin-top:4px;font-size:11px;color:${onTimeColor};font-weight:600;">
                         <i class="fa fa-clock-o"></i> ${bus.onTime}% On-Time
                     </div>
@@ -2434,9 +2410,10 @@
         function renderLiveOverlayDropoffs(bus) {
             const el = document.getElementById('live-overlay-dropoffs');
             if (!el) return;
-            const dropoffs = bus.dropoffs || [];
+            const dropoffs = bus.state ? (bus.state.drop_off_forecast || []) : [];
             if (!dropoffs.length) {
-                el.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:10px;">No passengers yet.</p>';
+                el.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:12px;padding:10px;">'
+                    + (bus.state ? 'No passengers yet.' : 'Waiting for live data…') + '</p>';
                 return;
             }
             el.innerHTML = dropoffs.map(d => {
@@ -2452,18 +2429,12 @@
             const bus = busData.find(b => b.plate === plate);
             movingIdx = bus.startIdx;
             document.getElementById('active-bus-plate').innerText = bus.plate;
-            document.getElementById('stat-occ').innerText = (bus.occ !== null && bus.occ !== undefined) ? bus.occ : '—';
-            document.getElementById('stat-emp').innerText = (bus.occ !== null && bus.occ !== undefined) ? bus.emp : '—';
-
-            // Only show standing if empty seats is 0
-            const liveStd = (bus.occ !== null && bus.occ !== undefined) ? (bus.emp > 0 ? 0 : bus.std) : '—';
-            document.getElementById('stat-std').innerText = liveStd;
-
             document.getElementById('speed-badge').innerHTML = '— <small style="color:#666;font-weight:400;">Simulated</small>';
             document.getElementById('live-condition-view').style.display = 'flex';
 
-            // Render drop-offs from backend data
-            renderLiveOverlayDropoffs(bus);
+            // Occupancy + drop-offs from backend data (refreshed by the poller while open)
+            renderLiveStats(bus);
+            pollNow();
 
             // Guard: Leaflet may not be loaded in offline mode
             if (typeof L === 'undefined') {
@@ -2503,6 +2474,14 @@
             }, 2000);
         }
 
+        function renderLiveStats(bus) {
+            const s = bus.state;
+            document.getElementById('stat-occ').innerText = s ? s.seated : '—';
+            document.getElementById('stat-emp').innerText = s ? s.empty : '—';
+            document.getElementById('stat-std').innerText = s ? s.standing : '—';
+            renderLiveOverlayDropoffs(bus);
+        }
+
         function closeLive() {
             document.getElementById('live-condition-view').style.display = 'none';
             if (animTimer) { clearInterval(animTimer); animTimer = null; }
@@ -2519,12 +2498,49 @@
             { name: 'GUNTUR RTC', offset: 70 }
         ];
 
+        // Minutes from a bus's first stop to each of its stops, from the template's offsets.
+        // Works for both directions because it uses |offset difference| between stop names.
+        const STOP_OFFSET = {};
+        routeStopsTemplate.forEach(s => { STOP_OFFSET[s.name] = s.offset; });
+        function stopOffsets(stops) {
+            const base = STOP_OFFSET[stops[0]] || 0;
+            return stops.map(n => Math.abs((STOP_OFFSET[n] || 0) - base));
+        }
+        function hhmm(d) { return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+
+        // Timeline driven by the backend's current_stop_index and `stops` (this bus's travel order), not the clock
+        function busTimeline(bus) {
+            const s = bus.state;
+            if (!s || !Array.isArray(s.stops)) return null;
+            const offs = stopOffsets(s.stops);
+            const cur = s.current_stop_index;
+            const now = Date.now();
+            return s.stops.map((name, j) => ({
+                name,
+                index: j,
+                status: j < cur ? 'passed' : j === cur ? 'current' : 'upcoming',
+                etaMins: j > cur ? offs[j] - offs[cur] : 0,
+                etaText: j > cur ? hhmm(new Date(now + (offs[j] - offs[cur]) * 60000)) : null
+            }));
+        }
+
+        function nextStopEta(bus) {
+            const tl = busTimeline(bus);
+            if (!tl) return '—';
+            const next = tl[bus.state.current_stop_index + 1];
+            return next ? `${next.etaMins} min (scheduled)` : 'At last stop';
+        }
+
         function renderRouteTimeline(busObj) {
             const container = document.getElementById('rt-timeline-stops');
             container.innerHTML = '';
-            if (!busObj.dynamicStops) return;
-            busObj.dynamicStops.forEach((stop, idx) => {
-                const isLast = idx === busObj.dynamicStops.length - 1;
+            const timeline = busTimeline(busObj);
+            if (!timeline) {
+                container.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">Waiting for live data…</p>';
+                return;
+            }
+            timeline.forEach((stop, idx) => {
+                const isLast = idx === timeline.length - 1;
                 const isCurrent = stop.status === 'current';
                 const isPassed = stop.status === 'passed';
                 const isUpcoming = stop.status === 'upcoming';
@@ -2545,6 +2561,9 @@
 
                 const timeColor = isUpcoming ? 'muted' : '';
                 const nameClass = isCurrent ? 'current' : (isUpcoming ? 'muted' : '');
+                const timeText = isPassed ? 'Departed'
+                    : isCurrent ? 'Now'
+                    : `ETA ${stop.etaText} <small style="color:#94a3b8;font-weight:400;">Scheduled</small>`;
 
                 const stopHtml = `
                     <div class="rt-stop">
@@ -2556,12 +2575,7 @@
                             <div class="rt-stop-name ${nameClass}">${stop.name}</div>
                             <div class="rt-times">
                                 <div class="rt-time-cell">
-                                    <span class="rt-time-icon">↩</span>
-                                    <span class="rt-time-val ${timeColor}">${stop.arr}</span>
-                                </div>
-                                <div class="rt-time-cell">
-                                    <span class="rt-time-icon">↪</span>
-                                    <span class="rt-time-val ${timeColor}">${stop.dep}</span>
+                                    <span class="rt-time-val ${timeColor}">${timeText}</span>
                                 </div>
                             </div>
                         </div>
@@ -2573,21 +2587,27 @@
         function renderDropoffPanel(bus) {
             const list = document.getElementById('dof-stop-list');
             list.innerHTML = '';
-            const dropoffs = bus.dropoffs || [];
+            const s = bus.state;
+            const dropoffs = s ? (s.drop_off_forecast || []) : [];
+            document.getElementById('dof-total-onboard').textContent = s ? s.onboard : '—';
             if (!dropoffs.length) {
-                list.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">No passengers yet.</p>';
+                list.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:13px;padding:20px;">'
+                    + (s ? 'No passengers yet.' : 'Waiting for live data…') + '</p>';
+                document.getElementById('dof-after-next').textContent = s ? s.onboard : '—';
                 return;
             }
+            const timeline = busTimeline(bus);
             // Max count for bar scaling
             const maxCount = Math.max(...dropoffs.map(d => d.count));
             dropoffs.forEach(d => {
                 const pct = Math.round(d.count / maxCount * 100);
                 let tier = pct >= 70 ? 'high' : pct >= 35 ? 'med' : 'low';
+                const eta = timeline && timeline[d.stop_index] ? timeline[d.stop_index].etaText : '—';
                 list.insertAdjacentHTML('beforeend', `
                     <div class="dof-stop-row">
                         <div class="dof-stop-top">
                             <span class="dof-stop-name">📍 ${d.stop}</span>
-                            <span class="dof-stop-eta">ETA ${d.eta}</span>
+                            <span class="dof-stop-eta">ETA ${eta}</span>
                         </div>
                         <div class="dof-stop-bottom">
                             <div class="dof-bar-wrap">
@@ -2600,28 +2620,26 @@
                         </div>
                     </div>`);
             });
-            // Update footer context
-            const totalOnboard = bus.occ + bus.std;
-            const afterNext = Math.max(0, totalOnboard - (dropoffs[0]?.count || 0));
-            document.getElementById('dof-total-onboard').textContent = totalOnboard;
-            document.getElementById('dof-after-next').textContent = afterNext;
+            // Footer: after next stop = onboard minus those alighting at the next stop
+            const next = dropoffs.find(d => d.stop_index === s.current_stop_index + 1);
+            document.getElementById('dof-after-next').textContent = s.onboard - (next ? next.count : 0);
         }
 
         // ─ Single function that owns every occupancy display on the details page ─
         function updateOccupancyNumbers(occupied, capacity) {
-            // occupied = backend occupied_seats value
+            // occupied = backend `onboard` (passengers whose destination is still ahead)
             const cap = capacity || 50;
             const seated   = Math.min(occupied, cap);
             const empty    = Math.max(0, cap - occupied);
             const standing = Math.max(0, occupied - cap);
-            const pct      = Math.min(100, Math.round(occupied / cap * 100));
+            const pct      = Math.round(occupied / cap * 100);
 
             // Occ-card counters
             const elOcc = document.getElementById('occ-card-occ'); if (elOcc) elOcc.textContent = seated;
             const elEmp = document.getElementById('occ-card-emp'); if (elEmp) elEmp.textContent = empty;
             const elStd = document.getElementById('occ-card-std'); if (elStd) elStd.textContent = standing;
-            // Bar
-            const bar = document.getElementById('occ-bar-fill'); if (bar) bar.style.width = pct + '%';
+            // Bar (capped at full width; label shows the real % incl. standing)
+            const bar = document.getElementById('occ-bar-fill'); if (bar) bar.style.width = Math.min(100, pct) + '%';
             const lbl = document.getElementById('occ-pct-label'); if (lbl) lbl.textContent = pct + '% capacity';
             // Drawer details
             const dOcc = document.getElementById('occ-d-occ'); if (dOcc) dOcc.textContent = seated + ' / ' + cap;
@@ -2632,35 +2650,43 @@
             const iStd = document.getElementById('info-std'); if (iStd) iStd.textContent = standing;
         }
 
+        function resetOccupancyNumbers() {
+            ['occ-card-occ', 'occ-card-emp', 'occ-card-std', 'occ-d-occ', 'occ-d-emp', 'occ-d-std', 'info-occ', 'info-std']
+                .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '—'; });
+            const bar = document.getElementById('occ-bar-fill'); if (bar) bar.style.width = '0%';
+            const lbl = document.getElementById('occ-pct-label'); if (lbl) lbl.textContent = '— capacity';
+        }
+
+        // Everything on the details page for one bus, from its latest backend state
+        function renderTracking(bus) {
+            const s = bus.state;
+            if (s) updateOccupancyNumbers(s.onboard, s.seat_capacity);
+            else resetOccupancyNumbers();
+
+            const eta = nextStopEta(bus);
+            ['info-eta', 'occ-d-eta'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = eta; });
+            ['occ-d-updated', 'info-lastupdate'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.textContent = s ? (lastPollTime || '—') : '—';
+            });
+
+            const routeName = bus.route === 'gnt-vja' ? 'Guntur → Vijayawada' : 'Vijayawada → Guntur';
+            document.getElementById('rt-route-name').textContent = 'Route: ' + routeName;
+            document.getElementById('info-route').textContent = routeName;
+
+            renderDropoffPanel(bus);
+            renderRouteTimeline(bus);
+        }
+
         function openRouteTracking(plate) {
             const bus = busData.find(b => b.plate === plate) || busData[0];
-            const cap = bus.cap || 50;
 
             document.getElementById('rt-bus-plate-display').textContent = bus.plate;
             document.getElementById('info-bus-no').textContent = bus.plate;
 
-            // Use updateOccupancyNumbers for consistent display; show — if no data yet
-            if (bus.occ !== null && bus.occ !== undefined) {
-                updateOccupancyNumbers(bus.occ, cap);
-            }
-            // else all fields stay as — from HTML
-
-            document.getElementById('info-eta').textContent = bus.eta;
-
-            // Last Updated: show last successful poll time or —
-            const luEl = document.getElementById('info-lastupdate');
-            if (luEl) luEl.textContent = lastPollTime ? lastPollTime : '—';
-
-            // Updated timestamp
-            const updEl = document.getElementById('occ-d-updated');
-            if (updEl) updEl.textContent = lastPollTime ? lastPollTime : '—';
-
-            // ETA in drawer
-            const etaEl = document.getElementById('occ-d-eta');
-            if (etaEl) etaEl.textContent = bus.eta;
-
-            // Speed: never random-generate — show — with Simulated tag
-            // (HTML already says — Simulated; nothing to update here)
+            // Occupancy, ETAs, drop-offs and timeline from backend state (— until the first poll answers)
+            // Speed: never random-generate — HTML shows — with Simulated tag
+            renderTracking(bus);
+            hideStaleBanner();
 
             // Reset drawer on open
             const drawer = document.getElementById('occ-details-drawer');
@@ -2674,14 +2700,10 @@
                 if (rtImg) rtImg.src = splashImg.src;
             }
 
-            // Render drop-off panel
-            renderDropoffPanel(bus);
-
             // Reset tab to Full Route
             switchRTTab('fullroute');
-            renderRouteTimeline(bus);
 
-            navigate('route-tracking');
+            navigate('route-tracking'); // also polls this bus immediately
         }
 
         function switchRTTab(tab) {
@@ -2702,167 +2724,99 @@
             navigate('user-results');
         }
 
-        // --- ETM PROTOTYPE INTEGRATION ---
-        // Listen for new tickets printed in 'ETM Sample - Copy.html'
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'etmNewEvent' && e.newValue) {
-                try {
-                    const data = JSON.parse(e.newValue);
-                    const tktCount = parseInt(data.tickets) || 0;
-                    const dest = data.destination || '';
-                    const busPlate = data.bus_plate || '';
+        // --- BACKEND POLLING (FastAPI) — the backend is the only source of occupancy numbers ---
+        // Bus list / admin list: ONE /api/bus_states request for all visible buses.
+        // Details page: /api/bus_state/{bus}. Every 3s while visible; paused while the tab is hidden.
+        const POLL_MS = 3000;
+        const STALE_MS = 15000;          // stale banner after 15s without a successful update
+        let lastPollTime = null;         // HH:MM string of last successful poll
+        let lastPollEpoch = 0;           // epoch ms
+        let viewSince = Date.now();      // when the current screen started showing (avoids a false stale banner)
+        let lastViewKey = '';
+        const lastServerTime = {};       // bus_id -> newest server_time applied (drops out-of-order responses)
+        const pollsInFlight = new Set(); // one request per key at a time
 
-                    if (tktCount > 0) {
-                        // Find the exactly matching bus by plate using the new ETM payload, 
-                        // fallback to destination inference, or default to main bus
-                        let bus;
-                        if (busPlate) bus = busData.find(b => b.plate === busPlate);
-                        if (!bus) bus = busData.find(b => b.dropoffs && b.dropoffs.some(d => d.stop === dest));
-                        if (!bus) bus = busData.find(b => b.plate === 'AP16Z-4022');
-
-                        if (bus) {
-                            // Update dropoffs info inline
-                            if (!bus.dropoffs) bus.dropoffs = [];
-                            let dInfo = bus.dropoffs.find(d => d.stop === dest);
-                            if (dInfo) {
-                                dInfo.count += tktCount;
-                            } else {
-                                bus.dropoffs.push({ stop: dest, eta: 'N/A', count: tktCount });
-                            }
-
-                            const availableSeats = bus.emp;
-                            if (availableSeats >= tktCount) {
-                                bus.occ += tktCount;
-                                bus.emp -= tktCount;
-                            } else {
-                                bus.occ += availableSeats;
-                                bus.emp = 0;
-                                bus.std += (tktCount - availableSeats);
-                            }
-
-                            // Update drop-off forecast count for this destination
-                            if (bus.dropoffs) {
-                                const dof = bus.dropoffs.find(d => d.stop === dest);
-                                if (dof) { dof.count += tktCount; }
-                                else { bus.dropoffs.push({ stop: dest, eta: '—', count: tktCount }); }
-                            }
-
-                            // If currently viewing this bus in live tracking, refresh the UI inline
-                            const trackingScreen = document.getElementById('route-tracking');
-                            if (trackingScreen && trackingScreen.classList.contains('active')) {
-                                const plateDisplay = document.getElementById('rt-bus-plate-display');
-                                if (plateDisplay && plateDisplay.textContent === bus.plate) {
-                                    updateLiveOccupancy(bus);
-
-                                    // Visual flash to show the live update
-                                    const card = document.getElementById('occ-summary-card');
-                                    if (card) {
-                                        card.style.transition = 'all 0.3s ease';
-                                        card.style.transform = 'scale(1.03)';
-                                        card.style.boxShadow = '0 8px 25px rgba(74, 222, 128, 0.7)';
-                                        setTimeout(() => {
-                                            card.style.transform = 'scale(1)';
-                                            card.style.boxShadow = '0 4px 18px rgba(37, 99, 235, 0.3)';
-                                        }, 400);
-                                    }
-
-                                    // Re-render dropoff panel with updated bus.dropoffs
-                                    renderDropoffPanel(bus);
-                                }
-                            }
-
-                            // Immediately re-render lists so changes reflect instantly without waiting for poll
-                            renderUserList();
-                            const adminDash = document.getElementById('admin-dashboard');
-                            if (adminDash && adminDash.classList.contains('active')) {
-                                renderAdminList();
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error("Error parsing ETM event:", err);
-                }
-            }
-        });
-
-        // updateLiveOccupancy — thin wrapper that delegates to updateOccupancyNumbers
-        function updateLiveOccupancy(bus) {
-            if (bus.occ === null || bus.occ === undefined) return;
-            const cap = bus.cap || 50;
-            updateOccupancyNumbers(bus.occ, cap);
-            // Refresh timestamps
-            if (lastPollTime) {
-                const upd = document.getElementById('occ-d-updated'); if (upd) upd.textContent = lastPollTime;
-                const lu  = document.getElementById('info-lastupdate');
-                if (lu) lu.textContent = lastPollTime;
-            }
-            // Also refresh live overlay drop-offs if open
-            renderLiveOverlayDropoffs(bus);
+        function screenActive(id) {
+            const el = document.getElementById(id);
+            return !!el && el.classList.contains('active');
+        }
+        function liveOverlayOpen() {
+            const el = document.getElementById('live-condition-view');
+            return !!el && el.style.display === 'flex';
+        }
+        function trackedBus() {
+            const plate = document.getElementById('rt-bus-plate-display').textContent;
+            return busData.find(b => b.plate === plate) || busData[0];
         }
 
-        // --- BACKEND POLLING (FastAPI) ---
-        let lastPollTime = null;        // HH:MM string of last successful poll
-        let lastPollEpoch = 0;          // epoch ms
-        let staleTimer = null;          // retry interval when stale
-        const STALE_MS = 60000;         // 60 seconds
+        function applyBusState(s) {
+            const bus = s && busData.find(b => b.id === s.bus_id);
+            if (!bus) return;
+            const prev = lastServerTime[s.bus_id];
+            if (prev && s.server_time && s.server_time < prev) return; // older than what we already show
+            if (s.server_time) lastServerTime[s.bus_id] = s.server_time;
+            bus.state = s;
+            bus.occ = s.onboard;
+            bus.cap = s.seat_capacity;
+            bus.emp = s.empty;
+            bus.std = s.standing;
+            bus.dropoffs = s.drop_off_forecast || [];
+        }
 
-        async function pollBackend() {
+        async function pollOnce(key, url, handle) {
+            if (pollsInFlight.has(key)) return;
+            pollsInFlight.add(key);
             try {
-                const activeBuses = busData.filter(b => b.id);
-                // cache:'no-store' — bypass all HTTP caches
-                const fetchPromises = activeBuses.map(b => fetch(
-                    `${BACKEND_URL}/api/bus_state/${b.id}`, { cache: 'no-store' }
-                ));
-                const responses = await Promise.all([...fetchPromises].map(p => p.catch(e => e)));
-
-                let gotAny = false;
-                responses.forEach(async (response, idx) => {
-                    if (response instanceof Response && response.ok) {
-                        const state = await response.json();
-                        let bus = activeBuses[idx];
-
-                        bus.occ = state.occupied_seats;
-                        const available = state.total_capacity - state.occupied_seats;
-                        bus.cap = state.total_capacity;
-                        bus.emp = available > 0 ? available : 0;
-                        bus.std = available < 0 ? Math.abs(available) : 0;
-
-                        if (state.dropoffs && Array.isArray(state.dropoffs)) {
-                            state.dropoffs.forEach(bd => {
-                                let localD = bus.dropoffs && bus.dropoffs.find(ld => ld.stop === bd.stop);
-                                if (localD && localD.eta !== 'N/A') { bd.eta = localD.eta; }
-                            });
-                            bus.dropoffs = state.dropoffs;
-                        }
-
-                        gotAny = true;
-                        const trackingScreen = document.getElementById('route-tracking');
-                        if (trackingScreen && trackingScreen.classList.contains('active')) {
-                            const plateDisplay = document.getElementById('rt-bus-plate-display');
-                            if (plateDisplay && plateDisplay.textContent === bus.plate) {
-                                updateLiveOccupancy(bus);
-                                renderDropoffPanel(bus);
-                            }
-                        }
-                    }
-                });
-
-                if (gotAny) {
-                    const now = new Date();
-                    lastPollTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    lastPollEpoch = now.getTime();
-                    hideStaleBanner();
-                    if (staleTimer) { clearInterval(staleTimer); staleTimer = null; }
-                }
-
-                const adminDash = document.getElementById('admin-dashboard');
-                if (adminDash && adminDash.classList.contains('active')) { renderAdminList(); }
-
+                const r = await fetch(url, { cache: 'no-store' }); // bypass all HTTP caches
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                handle(await r.json());
+                const now = new Date();
+                lastPollTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                lastPollEpoch = now.getTime();
+                hideStaleBanner();
             } catch (err) {
                 console.error('Backend unavailable:', err);
+            } finally {
+                pollsInFlight.delete(key);
+                refreshVisible();
             }
-            updateTimings();
-            renderUserList();
+        }
+
+        // Poll whatever is on screen right now
+        function pollNow() {
+            if (document.hidden) return;
+            const viewKey = ['route-tracking', 'user-results', 'admin-dashboard'].filter(screenActive).join('|')
+                + (screenActive('route-tracking') ? ':' + trackedBus().id : '');
+            if (viewKey !== lastViewKey) { lastViewKey = viewKey; viewSince = Date.now(); }
+
+            if (screenActive('route-tracking')) {
+                const bus = trackedBus();
+                pollOnce('one:' + bus.id, `${BACKEND_URL}/api/bus_state/${encodeURIComponent(bus.id)}`, applyBusState);
+            }
+            // The admin live overlay sits on the admin dashboard, so the all-bus batch covers it too
+            const ids = screenActive('user-results') ? busData.filter(b => b.route === currentSearchRouteDir).map(b => b.id)
+                : screenActive('admin-dashboard') ? busData.map(b => b.id)
+                : [];
+            if (ids.length) {
+                pollOnce('batch:' + ids.join(','), `${BACKEND_URL}/api/bus_states?ids=${ids.map(encodeURIComponent).join(',')}`,
+                    res => Object.values(res.buses || {}).forEach(applyBusState));
+            }
+            checkStale();
+        }
+
+        function refreshVisible() {
+            renderUserList(); // no-op unless the list is showing
+            if (screenActive('admin-dashboard')) renderAdminList();
+            if (screenActive('route-tracking')) renderTracking(trackedBus());
+            if (liveOverlayOpen()) {
+                const bus = busData.find(b => b.plate === document.getElementById('active-bus-plate').innerText);
+                if (bus) renderLiveStats(bus);
+            }
+        }
+
+        function checkStale() {
+            if (!screenActive('route-tracking')) return;
+            if (Date.now() - Math.max(lastPollEpoch, viewSince) > STALE_MS) showStaleBanner();
         }
 
         function showStaleBanner() {
@@ -2873,93 +2827,19 @@
             const b = document.getElementById('stale-banner'); if (b) b.style.display = 'none';
         }
 
-        // Normal 3-second poll
-        setInterval(() => {
-            pollBackend();
-            // Check staleness each tick
-            if (lastPollEpoch && (Date.now() - lastPollEpoch > STALE_MS)) {
-                showStaleBanner();
-                if (!staleTimer) {
-                    staleTimer = setInterval(pollBackend, 5000); // retry every 5s while stale
-                }
-            }
-        }, 3000);
+        // Normal 3-second poll (pollNow skips while the tab is hidden)
+        setInterval(pollNow, POLL_MS);
+        setInterval(checkStale, 1000);
 
-        // Sync reliability: immediate repoll on reconnect / refocus / visibility
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pollBackend(); });
-        window.addEventListener('focus',  pollBackend);
-        window.addEventListener('online', pollBackend);
-
-
-        // --- DYNAMIC LIVE TIMING ENGINE ---
-        function initLiveTimings() {
-            const now = Date.now();
-            busData.forEach((bus, i) => {
-                // Spread bus departures around the current time for dynamic feel
-                // Bus 0 started 30 mins ago, Bus 1: 15m ago, Bus 2: Now, etc.
-                let startOffsetMins = (i * 15) - 30; 
-                bus.startTime = new Date(now + startOffsetMins * 60000);
-            });
-            updateTimings();
+        // Poll IMMEDIATELY when the page becomes visible again, regains focus or reconnects
+        function wakePoll() {
+            if (document.hidden) return;
+            viewSince = Date.now();
+            pollNow();
         }
-
-        function updateTimings() {
-            const now = Date.now();
-            busData.forEach(bus => {
-                let diffMins = Math.round((bus.startTime.getTime() - now) / 60000);
-                
-                // Update basic schedule strings
-                if (diffMins > 0) {
-                    bus.time = bus.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    bus.eta = diffMins + ' mins';
-                } else {
-                    let passed = Math.abs(diffMins);
-                    bus.time = "Departed";
-                    bus.eta = passed === 0 ? "Now" : (passed > 60 ? `>1 hr ago` : `Left ${passed}m ago`);
-                }
-                
-                // Update dynamic stop timetable
-                bus.dynamicStops = routeStopsTemplate.map(stop => {
-                    let stopTime = new Date(bus.startTime.getTime() + stop.offset * 60000);
-                    let stopDiff = Math.round((stopTime.getTime() - now) / 60000);
-                    let status = stopDiff < -1 ? 'passed' : stopDiff <= 1 ? 'current' : 'upcoming';
-                    
-                    return {
-                        name: stop.name,
-                        arr: stopTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        dep: new Date(stopTime.getTime() + 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        status: status,
-                        etaMins: Math.max(0, stopDiff)
-                    };
-                });
-                
-                // Sync dropoff ETAs mathematically
-                if (bus.dropoffs) {
-                    bus.dropoffs.forEach(dof => {
-                       let s = bus.dynamicStops.find(ds => ds.name === dof.stop);
-                       if (s) dof.eta = s.etaMins + ' min';
-                    });
-                }
-            });
-
-            // Re-render live screens if actively open
-            const trackingScreen = document.getElementById('route-tracking');
-            if (trackingScreen && trackingScreen.classList.contains('active')) {
-                const plateDisplay = document.getElementById('rt-bus-plate-display');
-                if (plateDisplay) {
-                    const activeBus = busData.find(b => b.plate === plateDisplay.textContent);
-                    if (activeBus) {
-                        document.getElementById('info-eta').textContent = activeBus.eta;
-                        document.getElementById('occ-d-eta').textContent = activeBus.eta;
-                        renderDropoffPanel(activeBus);
-                        renderRouteTimeline(activeBus);
-                    }
-                }
-            }
-        }
-
-        // Boot live timing generator on load
-        initLiveTimings();
+        document.addEventListener('visibilitychange', wakePoll);
+        window.addEventListener('focus', wakePoll);
+        window.addEventListener('online', wakePoll);
     </script>
 </body>
 
