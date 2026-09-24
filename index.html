@@ -1009,7 +1009,7 @@
         }
 
         .rt-header .rt-logo-pill img {
-            height: 28px;
+            height: 36px;
             width: auto;
             object-fit: contain;
         }
@@ -2006,7 +2006,7 @@
             <div class="rt-header">
                 <i class="fa fa-arrow-left" style="cursor:pointer;font-size:18px;" onclick="closeTracking()"></i>
                 <div class="rt-logo-pill">
-                    <img id="rt-logo-img" src="" alt="TravelloBus" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='inline';" style="height:28px;width:auto;object-fit:contain;">
+                    <img id="rt-logo-img" src="assets/travellobus-icon.png" alt="TravelloBus" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='inline';" style="height:36px;width:auto;object-fit:contain;">
                 <span style="display:none;font-weight:800;">TravelloBus</span>
                 </div>
                 <span style="font-size:14px;font-weight:800;">Bus Details</span>
@@ -2692,13 +2692,6 @@
             const drawer = document.getElementById('occ-details-drawer');
             const icon = document.getElementById('occ-toggle-icon');
             if (drawer) { drawer.classList.remove('open'); icon.classList.remove('open'); }
-
-            // Copy logo src from splash logo into header pill logo
-            const splashImg = document.querySelector('#splash-screen img');
-            if (splashImg) {
-                const rtImg = document.getElementById('rt-logo-img');
-                if (rtImg) rtImg.src = splashImg.src;
-            }
 
             // Reset tab to Full Route
             switchRTTab('fullroute');
