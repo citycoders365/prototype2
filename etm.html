@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travellobus | Smart ETM & Live Plugin</title>
+    <title>TravelloBus · ETM Simulator</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=VT323&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -391,10 +391,10 @@
                 <i class="fa-solid fa-server"></i>
             </div>
             <div>
-                <h2 style="margin:0; font-size: 1.2em;">Live Audit Plugin</h2>
+                <h2 style="margin:0; font-size: 1.2em;">Ticket feed → TravelloBus cloud</h2>
                 <span
                     style="font-size: 0.8em; background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px;">●
-                    Connected to ETM</span>
+                    Connected to cloud</span>
             </div>
         </div>
 
@@ -426,7 +426,7 @@
 
         <h4 style="color: #64748b; margin-bottom: 5px; font-size: 0.9em;">System Logs</h4>
         <div class="log-box" id="logBox">
-            <div class="log-entry">Plugin initialized. Listening for ETM...</div>
+            <div class="log-entry">Simulator ready.</div>
         </div>
     </div>
 
@@ -613,6 +613,7 @@
                 // -> Send Payload to FastAPI Backend
                 fetch(`${BACKEND_URL}/api/issue_ticket`, {
                     method: 'POST',
+                    cache: 'no-store',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         bus_id: activeBus.id, // Dynamic based on selection
@@ -665,7 +666,7 @@
             if (step === 0) return; // Do not poll stats until a bus is actively selected!
             try {
                 const activeBusId = busList[currentBusIdx].id;
-                const response = await fetch(`${BACKEND_URL}/api/bus_state/${activeBusId}`);
+                const response = await fetch(`${BACKEND_URL}/api/bus_state/${activeBusId}`, { cache: 'no-store' });
                 if (response.ok) {
                     const state = await response.json();
                     
