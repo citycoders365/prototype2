@@ -33,6 +33,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            justify-content: safe center;
+            overflow-y: auto;
             border-right: 3px solid #cbd5e1;
             padding: 20px;
             background: #eef2f6;
@@ -224,6 +226,71 @@
             padding-left: 8px;
         }
 
+        .log-entry span { color: #fff; }
+        .log-entry.log-ok span { color: #86efac; }
+        .log-entry.log-warn { border-left-color: #f59e0b; }
+        .log-entry.log-warn span { color: #fcd34d; }
+        .log-entry.log-error { border-left-color: #ef4444; }
+        .log-entry.log-error span { color: #fca5a5; }
+
+        .screen-line.type-line {
+            font-size: 20px;
+        }
+
+        /* Sync status strip under the ETM screen */
+        .sync-status {
+            margin: -13px 0 18px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            background: #0f172a;
+            color: #cbd5e1;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            min-height: 16px;
+        }
+        .sync-status.ok { color: #4ade80; }
+        .sync-status.sending { color: #fbbf24; }
+        .sync-status.waking, .sync-status.connecting { color: #fb923c; }
+        .sync-status.error { color: #f87171; }
+
+        /* Demo controls (collapsed by default) */
+        .demo-panel {
+            width: 390px;
+            box-sizing: border-box;
+            margin-top: 18px;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 0.9em;
+        }
+        .demo-panel summary {
+            cursor: pointer;
+            padding: 10px 14px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .demo-body {
+            padding: 0 14px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .demo-btn {
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            background: var(--primary-red);
+            color: #fff;
+        }
+        .demo-btn.secondary { background: #e2e8f0; color: #334155; }
+        .demo-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .demo-info { font-size: 0.85em; color: #64748b; }
+
         /* --- MOBILE RESPONSIVENESS AND COMPACT VIEW --- */
         @media (max-width: 768px) {
             body {
@@ -332,6 +399,11 @@
                 padding: 4px 0;
             }
 
+            .demo-panel {
+                width: 100%;
+                max-width: 380px;
+            }
+
             .log-box {
                 height: 80px;
                 padding: 8px;
@@ -345,15 +417,17 @@
 
     <div class="terminal-side">
         <h2 style="color: #333; margin-bottom: 5px;">ETM Prototype</h2>
-        <small style="margin-bottom: 20px; color: #666;">Route: Vijayawada -> Guntur</small>
+        <small style="margin-bottom: 20px; color: #666;" id="routeLabel">Route: Vijayawada -> Guntur</small>
 
         <div class="etm-body">
             <div class="etm-screen" id="display">
                 <div class="screen-line" id="line1">BUS: AP16Z-4022</div>
                 <div class="screen-line" id="line2">SRC: VIJAYAWADA</div>
+                <div class="screen-line type-line" id="lineType">&nbsp;</div>
                 <div class="screen-line" id="line3" style="color: #000; margin-top: auto;">> <span
                         id="selection">VIJAYAWADA PNBS</span><span class="cursor">_</span></div>
             </div>
+            <div class="sync-status connecting" id="syncStatus">Connecting…</div>
 
             <div class="keypad">
                 <button class="key key-nav" onclick="navigate('up')">A<br>▲</button>
@@ -374,7 +448,7 @@
                 <button class="key" onclick="pressNum(7)">7</button>
                 <button class="key" onclick="pressNum(8)">8</button>
                 <button class="key" onclick="pressNum(9)">9</button>
-                <button class="key">FN</button>
+                <button class="key" onclick="cycleType()">FN</button>
 
                 <button class="key">CLR</button>
                 <button class="key" onclick="pressNum(0)">0</button>
@@ -382,6 +456,15 @@
                 <button class="key key-enter" onclick="printTicket()">ENT</button>
             </div>
         </div>
+
+        <details class="demo-panel" id="demoPanel">
+            <summary>Demo controls (simulates GPS feed)</summary>
+            <div class="demo-body">
+                <div class="demo-info" id="demoStopInfo">Loading…</div>
+                <button class="demo-btn" id="btnAdvance" onclick="demoAction('advance')" disabled>Advance to next stop ▶</button>
+                <button class="demo-btn secondary" id="btnReset" onclick="demoAction('reset')" disabled>Reset trip</button>
+            </div>
+        </details>
     </div>
 
     <div class="plugin-side">
@@ -392,26 +475,26 @@
             </div>
             <div>
                 <h2 style="margin:0; font-size: 1.2em;">Ticket feed → TravelloBus cloud</h2>
-                <span
-                    style="font-size: 0.8em; background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px;">●
-                    Connected to cloud</span>
+                <span id="connBadge"
+                    style="font-size: 0.8em; background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px;">●
+                    Connecting…</span>
             </div>
         </div>
 
         <div class="audit-card" style="display: flex; gap: 20px;">
             <div>
-                <small style="color:#64748b;">Total Passengers</small>
-                <div class="stat-val" style="font-size: 1.4em;" id="totalTkts">0</div>
+                <small style="color:#64748b;">Passengers onboard</small>
+                <div class="stat-val" style="font-size: 1.4em;" id="totalTkts">—</div>
             </div>
             <div style="border-left: 1px solid #eee; padding-left: 20px;">
-                <small style="color:#64748b;">Total Revenue</small>
-                <div class="stat-val" style="font-size: 1.4em;" id="totalRev">₹0</div>
+                <small style="color:#64748b;">Est. revenue (this trip)</small>
+                <div class="stat-val" style="font-size: 1.4em;" id="totalRev">—</div>
             </div>
         </div>
 
         <div class="audit-card">
             <h4 style="margin:0 0 10px 0;">Live Drop-Off Forecast</h4>
-            <small style="color: #64748b;">Real-time passenger drop counts per stop</small>
+            <small style="color: #64748b;">Passengers onboard by destination (from cloud), in this bus's travel order</small>
             <table class="live-table" id="dropTable">
                 <thead>
                     <tr>
@@ -460,25 +543,80 @@
         let currentDestIdx = 1;
         let tktCount = 1;
 
-        let totalProcessed = 0;
-        let totalRevenue = 0;
+        // FN key cycles the ticket type; resets to Full after every ticket
+        const TICKET_TYPES = [
+            { key: 'full', label: 'FULL ₹35', short: 'Full', fare: 35 },
+            { key: 'zero_fare', label: 'STREE SHAKTI ₹0', short: 'Stree Shakti', fare: 0 },
+            { key: 'pass', label: 'PASS ₹0', short: 'Pass', fare: 0 }
+        ];
+        let typeIdx = 0;
 
-        let dropCounts = {};
-        routeData.stops.forEach(stop => dropCounts[stop] = 0);
+        // Backend is the only source of truth for occupancy
+        let busState = null;          // latest bus_state for the selected bus
+        const lastServerTime = {};    // bus_id -> server_time of newest state shown (drops out-of-order responses)
+        const prevDropCounts = {};    // for flashing changed badges
 
         // --- 3. INITIALIZATION ---
         function initTable() {
-            const tbody = document.getElementById('dropTableBody');
-            tbody.innerHTML = '';
-            routeData.stops.forEach((stop, index) => {
-                const row = `<tr>
-                    <td>${stop}</td>
-                    <td style="text-align: right;"><span id="drop-${index}" class="drop-badge">0</span></td>
-                    <td style="text-align: right; font-size: 0.8em; color: #64748b;">Active</td>
-                </tr>`;
-                tbody.innerHTML += row;
-            });
+            renderState();
             updateScreen();
+        }
+
+        // --- HELPERS ---
+        function activeBus() { return busList[currentBusIdx]; }
+        function isReturn(bus) { return bus.route === 'gnt-vja'; }
+        // Stops in THIS bus's travel order (index 0 = its first stop), same as the backend's `stops`
+        function dirStops(bus) { return isReturn(bus) ? routeData.stops.slice().reverse() : routeData.stops; }
+        // routeData.stops index <-> direction index (the formula is its own inverse)
+        function dirIndex(bus, idx) { return isReturn(bus) ? routeData.stops.length - 1 - idx : idx; }
+        function plateOf(busId) { const b = busList.find(x => x.id === busId); return b ? b.plate : busId; }
+        function typeShort(key) { const t = TICKET_TYPES.find(x => x.key === key); return t ? t.short : key; }
+        function stateFor(bus) { return (busState && busState.bus_id === bus.id) ? busState : null; }
+
+        // Boarding point defaults to the bus's current stop (first stop if unknown or at the end of the route)
+        function defaultSourceIdx(bus) {
+            const s = stateFor(bus);
+            let cur = s ? s.current_stop_index : 0;
+            if (cur >= routeData.stops.length - 1) cur = 0;
+            return dirIndex(bus, cur);
+        }
+
+        function newUUID() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                try { return window.crypto.randomUUID(); } catch (e) { /* insecure context: fall through */ }
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+
+        function fetchWithTimeout(url, opts, ms) {
+            const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timer = ctrl ? setTimeout(() => ctrl.abort(), ms) : null;
+            const init = Object.assign({ cache: 'no-store' }, opts || {}, ctrl ? { signal: ctrl.signal } : {});
+            return fetch(url, init).finally(() => { if (timer) clearTimeout(timer); });
+        }
+
+        function errorDetail(body, status) {
+            const d = body && body.detail;
+            if (Array.isArray(d)) return d.map(e => e.msg || JSON.stringify(e)).join('; ');
+            return d ? String(d) : 'HTTP ' + status;
+        }
+
+        // Est. revenue per trip, from fares the server confirmed to THIS ETM
+        const REV_KEY = 'etmRevenueByTrip';
+        let memRevenue = {};
+        function readRevenue() {
+            try { const r = JSON.parse(localStorage.getItem(REV_KEY) || 'null'); if (r && typeof r === 'object') return r; } catch (e) { }
+            return memRevenue;
+        }
+        function addRevenue(tripId, amount) {
+            if (!tripId || !amount) return;
+            const r = readRevenue();
+            r[tripId] = (r[tripId] || 0) + amount;
+            memRevenue = r;
+            try { localStorage.setItem(REV_KEY, JSON.stringify(r)); } catch (e) { }
         }
 
         // --- 4. NAVIGATION LOGIC ---
@@ -489,6 +627,7 @@
             if (step === 0) { // SELECT BUS
                 if (dir === 'down') currentBusIdx = (currentBusIdx + 1) % busList.length;
                 else currentBusIdx = (currentBusIdx - 1 + busList.length) % busList.length;
+                onBusChanged();
             }
             else if (step === 1) { // SELECT SOURCE
                 if (dir === 'down') currentSourceIdx = (currentSourceIdx + 1) % routeData.stops.length;
@@ -530,7 +669,7 @@
 
             if (step === 0) {
                 step = 1;
-                currentSourceIdx = isReturnRoute ? routeData.stops.length - 1 : 0;
+                currentSourceIdx = defaultSourceIdx(activeBus);
                 updateScreen();
             } else if (step === 1) {
                 if (!isReturnRoute && currentSourceIdx >= routeData.stops.length - 1) {
@@ -565,6 +704,11 @@
             
             const activeBus = busList[currentBusIdx];
 
+            document.getElementById('lineType').innerText =
+                step === 0 ? ' ' : 'TYPE: ' + TICKET_TYPES[typeIdx].label;
+            document.getElementById('routeLabel').innerText =
+                'Route: ' + (isReturn(activeBus) ? 'Guntur -> Vijayawada' : 'Vijayawada -> Guntur');
+
             if (step === 0) {
                 line1.innerText = "SETUP:";
                 line2.innerText = "SELECT BUS:";
@@ -584,124 +728,368 @@
             }
         }
 
+        function cycleType() {
+            if (step === 0) return;
+            typeIdx = (typeIdx + 1) % TICKET_TYPES.length;
+            updateScreen();
+        }
+
         // --- 5. PRINT & PLUGIN LOGIC ---
         function printTicket() {
             if (step === 3 && tktCount > 0) {
+                const bus = activeBus();
                 const srcName = routeData.stops[currentSourceIdx];
                 const destName = routeData.stops[currentDestIdx];
-                const price = tktCount * 35;
+                const type = TICKET_TYPES[typeIdx];
 
-                // A. Update Global Stats
-                totalProcessed += tktCount;
-                totalRevenue += price;
-                document.getElementById('totalTkts').innerText = totalProcessed;
-                document.getElementById('totalRev').innerText = "₹" + totalRevenue;
-
-                // B. LIVE DROP UPDATE
-                dropCounts[destName] += tktCount;
-
-                const rowId = `drop-${currentDestIdx}`;
-                const badge = document.getElementById(rowId);
-                if (badge) {
-                    badge.innerText = dropCounts[destName];
-                    badge.style.backgroundColor = "#bbf7d0";
-                    setTimeout(() => badge.style.backgroundColor = "#fee2e2", 500);
-                }
-
-                const activeBus = busList[currentBusIdx];
-
-                // -> Send Payload to FastAPI Backend
-                fetch(`${BACKEND_URL}/api/issue_ticket`, {
-                    method: 'POST',
-                    cache: 'no-store',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        bus_id: activeBus.id, // Dynamic based on selection
-                        origin: srcName,
-                        destination: destName,
-                        ticket_count: tktCount
-                    })
-                }).catch(err => console.error("Error sending ticket to backend:", err));
-
-                // -> Notify index.html on the same browser via localStorage
-                localStorage.setItem('etmNewEvent', JSON.stringify({
-                    bus_id: activeBus.id,
-                    bus_plate: activeBus.plate,
-                    destination: destName,
+                const payload = {
+                    bus_id: bus.id,
                     origin: srcName,
-                    tickets: tktCount,
-                    timestamp: Date.now()
-                }));
+                    destination: destName,
+                    origin_index: dirIndex(bus, currentSourceIdx),       // index in THIS bus's direction
+                    destination_index: dirIndex(bus, currentDestIdx),
+                    ticket_count: tktCount,
+                    ticket_type: type.key,
+                    client_event_id: newUUID()
+                };
 
-                // C. Log
-                addLog(`TICKET: ${tktCount}x [${srcName} -> ${destName}] ON ${activeBus.plate}. Rev: ₹${price}`);
+                // Save BEFORE sending, then send immediately
+                enqueueTicket(payload);
+                addLog(`TICKET: ${tktCount}x ${type.short} [${srcName} -> ${destName}] ON ${bus.plate} (₹${type.fare * tktCount})`);
+                setSync('sending', 'Sending…');
+                const cid = payload.client_event_id;
+                setTimeout(() => {
+                    if (readQueue().some(i => i.payload.client_event_id === cid)) setSync('waking', 'Waking server…');
+                }, 3000);
+                flushQueue();
 
-                // Remove blocking alert to allow instant sync across tabs
                 const screen = document.getElementById('display');
                 if (screen) {
                     screen.style.backgroundColor = "#bbf7d0";
                     setTimeout(() => screen.style.backgroundColor = "", 300);
                 }
 
-                // Reset to Source Selection
-                const isReturnRoute = activeBus.route === 'gnt-vja';
+                // Back to source selection, type back to Full
                 step = 1;
-                currentSourceIdx = isReturnRoute ? routeData.stops.length - 1 : 0;
+                currentSourceIdx = defaultSourceIdx(bus);
                 tktCount = 1;
+                typeIdx = 0;
                 updateScreen();
             }
         }
 
-        function addLog(msg) {
+        function addLog(msg, kind) {
             const box = document.getElementById('logBox');
             const div = document.createElement('div');
-            div.className = 'log-entry';
-            div.innerHTML = `> <span style='color:#fff'>${msg}</span>`;
+            div.className = 'log-entry' + (kind ? ' log-' + kind : '');
+            const span = document.createElement('span');
+            span.textContent = msg;
+            div.append('> ', span);
             box.prepend(div);
+            while (box.children.length > 200) box.lastChild.remove();
         }
 
-        // --- 6. BACKGROUND POLLING ---
-        // Fetch accurate counts directly from the backend to ensure deletes natively sync
-        setInterval(async () => {
-            if (step === 0) return; // Do not poll stats until a bus is actively selected!
+        // --- 6. DURABLE TICKET QUEUE (localStorage; one dispatcher sends in queue order, up to 5 in flight) ---
+        const QUEUE_KEY = 'etmTicketQueue';
+        const BACKOFF_MS = [1000, 2000, 5000];   // then every 10s
+        const MAX_IN_FLIGHT = 5;
+        let memQueue = [];
+        const inFlight = new Set();              // client_event_ids with a request in flight (never more than one each)
+        let retryTimer = null;
+
+        function readQueue() {
             try {
-                const activeBusId = busList[currentBusIdx].id;
-                const response = await fetch(`${BACKEND_URL}/api/bus_state/${activeBusId}`, { cache: 'no-store' });
-                if (response.ok) {
-                    const state = await response.json();
-                    
-                    // Update global UI ticket count based on the dynamic database truth
-                    totalProcessed = state.occupied_seats;
-                    totalRevenue = totalProcessed * 35; // Assuming static ticket price 
-                    document.getElementById('totalTkts').innerText = totalProcessed;
-                    document.getElementById('totalRev').innerText = "₹" + totalRevenue;
-                    
-                    // Zero out local drop counts safely
-                    for (let s in dropCounts) { dropCounts[s] = 0; }
-                    
-                    // Override with accurate backend sums 
-                    if (state.dropoffs && Array.isArray(state.dropoffs)) {
-                        state.dropoffs.forEach(bd => {
-                            if(dropCounts[bd.stop] !== undefined) {
-                                dropCounts[bd.stop] = bd.count;
-                            }
-                        });
-                    }
-                    
-                    // Re-render UI table badges immediately
-                    routeData.stops.forEach((stop, index) => {
-                        const badge = document.getElementById(`drop-${index}`);
-                        if (badge) {
-                            badge.innerText = dropCounts[stop];
-                        }
-                    });
+                const raw = localStorage.getItem(QUEUE_KEY);
+                if (raw !== null) { const q = JSON.parse(raw); if (Array.isArray(q)) return q; }
+            } catch (e) { }
+            return memQueue.slice();
+        }
+        function writeQueue(q) {
+            memQueue = q.slice();
+            try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch (e) { }
+            renderSync();
+        }
+        function enqueueTicket(payload) {
+            const q = readQueue();
+            q.push({ payload, attempts: 0, createdAt: Date.now() });
+            writeQueue(q);
+        }
+        function removeFromQueue(cid) {
+            writeQueue(readQueue().filter(i => i.payload.client_event_id !== cid));
+        }
+        function queuedItem(cid) {
+            return readQueue().find(i => i.payload.client_event_id === cid);
+        }
+
+        // Send now: dispatch queued tickets in order without waiting for earlier replies
+        function flushQueue() {
+            if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+            for (const item of readQueue()) {
+                if (inFlight.size >= MAX_IN_FLIGHT) break;
+                if (!inFlight.has(item.payload.client_event_id)) sendTicket(item);
+            }
+            renderSync();
+        }
+
+        async function sendTicket(item) {
+            const cid = item.payload.client_event_id;
+            inFlight.add(cid);
+            let res = null, body = null;
+            try {
+                res = await fetchWithTimeout(`${BACKEND_URL}/api/issue_ticket`, {
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(item.payload)
+                }, 45000);
+                try { body = await res.json(); } catch (e) { body = null; }
+            } catch (err) {
+                res = null; // network error or timeout
+            } finally {
+                inFlight.delete(cid);
+            }
+
+            const current = queuedItem(cid);
+            if (!current) { flushQueue(); return; }      // already handled (e.g. by another ETM tab)
+
+            if (res && res.ok) {                         // 200, including duplicate: true
+                removeFromQueue(cid);
+                onTicketConfirmed(item, body);
+                flushQueue();
+                return;
+            }
+            if (res && res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429) {
+                removeFromQueue(cid);                    // permanent rejection: drop, never block the queue
+                onTicketRejected(item, res.status, body);
+                flushQueue();
+                return;
+            }
+            // network error, timeout, 5xx, 408, 429 -> keep it and retry with backoff
+            const attempts = (current.attempts || 0) + 1;
+            writeQueue(readQueue().map(i => i.payload.client_event_id === cid ? Object.assign(i, { attempts }) : i));
+            const delay = attempts <= BACKOFF_MS.length ? BACKOFF_MS[attempts - 1] : 10000;
+            onTicketRetry(res ? 'HTTP ' + res.status : 'Network error', delay, !res);
+            if (!retryTimer) retryTimer = setTimeout(() => { retryTimer = null; flushQueue(); }, delay);
+        }
+
+        function onTicketConfirmed(item, body) {
+            const p = item.payload;
+            const plate = plateOf(p.bus_id);
+            const dup = !!(body && body.duplicate);
+            if (body && !dup) addRevenue(body.trip_id, body.fare || 0);
+            setConn('online');
+            addLog(`✓ SYNCED: ${p.ticket_count}x ${typeShort(p.ticket_type)} ${p.origin} -> ${p.destination} ON ${plate}` +
+                (dup ? ' (duplicate ignored)' : '') + (body ? ` · ${body.onboard} onboard` : ''), 'ok');
+            if (body) applyState(body);
+            const here = body && body.bus_id === activeBus().id;
+            // replies can arrive out of order: show the newest state we have for this bus
+            const onboard = here && busState ? busState.onboard : (body && body.onboard);
+            setSync('ok', body ? (here ? `✓ Synced — ${onboard} onboard` : `✓ Synced — ${plate}: ${onboard} onboard`) : '✓ Synced');
+        }
+
+        function onTicketRejected(item, status, body) {
+            const p = item.payload;
+            const reason = errorDetail(body, status);
+            addLog(`✗ REJECTED (HTTP ${status}), ticket dropped: ${p.ticket_count}x ${p.origin} -> ${p.destination} ON ${plateOf(p.bus_id)}. Reason: ${reason}`, 'error');
+            setSync('error', '✗ Rejected: ' + reason);
+        }
+
+        function onTicketRetry(reason, delay, networkDown) {
+            if (networkDown && serverReady) setConn('offline');
+            addLog(`⟳ ${reason}, ticket kept in queue, retrying in ${delay / 1000}s`, 'warn');
+            setSync('waking', `Waking server… retry in ${delay / 1000}s`);
+        }
+
+        // --- 7. STATUS DISPLAY ---
+        let syncMsg = { kind: 'connecting', text: 'Connecting…' };
+        function setSync(kind, text) { syncMsg = { kind, text }; renderSync(); }
+        function renderSync() {
+            const el = document.getElementById('syncStatus');
+            if (!el) return;
+            const n = readQueue().length;
+            const showPending = syncMsg.kind === 'sending' ? n > 1 : n > 0;
+            el.className = 'sync-status ' + syncMsg.kind;
+            el.textContent = syncMsg.text + (showPending ? `  ·  ⟳ ${n} pending` : '');
+        }
+
+        let serverReady = false;
+        function setConn(kind) {
+            const el = document.getElementById('connBadge');
+            if (!el) return;
+            const map = {
+                connecting: ['● Connecting…', '#fef3c7', '#92400e'],
+                online: ['● Connected to cloud', '#dcfce7', '#166534'],
+                offline: ['● Offline, retrying', '#fee2e2', '#991b1b']
+            };
+            const [text, bg, fg] = map[kind];
+            el.textContent = text;
+            el.style.background = bg;
+            el.style.color = fg;
+        }
+
+        // Pre-approve the CORS preflight for JSON POSTs so the first printed ticket skips that extra round trip.
+        // The browser caches the approval for Access-Control-Max-Age (600s); the OPTIONS call itself gets a 405, ignored.
+        function warmPreflight() {
+            fetch(`${BACKEND_URL}/api/issue_ticket`, {
+                method: 'OPTIONS', cache: 'no-store', headers: { 'Content-Type': 'application/json' }
+            }).catch(() => { });
+        }
+
+        // Warm-up: wake the (possibly sleeping) server as soon as the page opens
+        async function warmUp() {
+            try {
+                const r = await fetchWithTimeout(`${BACKEND_URL}/api/health`, { cache: 'no-store' }, 60000);
+                if (r.ok) {
+                    serverReady = true;
+                    warmPreflight();
+                    setConn('online');
+                    if (syncMsg.kind === 'connecting') setSync('idle', 'Ready');
+                    addLog('Cloud connected.', 'ok');
+                    return;
+                }
+            } catch (e) { }
+            setTimeout(warmUp, 3000);
+        }
+
+        // --- 8. STATE FROM BACKEND (issue_ticket responses + polling) ---
+        function applyState(s) {
+            if (!s || !s.bus_id) return;
+            const prev = lastServerTime[s.bus_id];
+            if (prev && s.server_time && s.server_time < prev) return; // older than what we already show
+            if (s.server_time) lastServerTime[s.bus_id] = s.server_time;
+            if (s.bus_id !== activeBus().id) return;
+            busState = s;
+            renderState();
+        }
+
+        function renderState() {
+            const bus = activeBus();
+            const s = stateFor(bus);
+            document.getElementById('totalTkts').innerText = s ? s.onboard : '—';
+            const rev = s ? (readRevenue()[s.trip_id] || 0) : null;
+            document.getElementById('totalRev').innerText = s ? '₹' + rev : '—';
+
+            const stops = (s && Array.isArray(s.stops)) ? s.stops : dirStops(bus);
+            const cur = s ? s.current_stop_index : -1;
+            const counts = {};
+            if (s) (s.drop_off_forecast || []).forEach(f => { counts[f.stop_index] = f.count; });
+
+            const tbody = document.getElementById('dropTableBody');
+            tbody.innerHTML = '';
+            stops.forEach((stop, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td></td>
+                    <td style="text-align: right;"><span class="drop-badge"></span></td>
+                    <td style="text-align: right; font-size: 0.8em; color: #64748b;"></td>`;
+                const count = s ? (counts[i] || 0) : '—';
+                tr.children[0].textContent = stop;
+                const badge = tr.querySelector('.drop-badge');
+                badge.textContent = count;
+                tr.children[2].textContent = !s ? '—' : i < cur ? 'Passed' : i === cur ? 'Bus here' : 'Ahead';
+                if (s && i < cur) tr.style.opacity = '0.45';
+                const key = `${bus.id}|${s ? s.trip_id : ''}|${i}`;
+                if (s && prevDropCounts[key] !== undefined && prevDropCounts[key] !== count) {
+                    badge.style.backgroundColor = "#bbf7d0";
+                    setTimeout(() => badge.style.backgroundColor = "", 600);
+                }
+                if (s) prevDropCounts[key] = count;
+                tbody.appendChild(tr);
+            });
+            renderDemoControls();
+        }
+
+        function onBusChanged() {
+            busState = null;
+            renderState();
+            pollState();
+        }
+
+        let pollingFor = null;
+        async function pollState() {
+            if (document.hidden) return;
+            const bus = activeBus();
+            if (pollingFor === bus.id) return; // one poll at a time per bus
+            pollingFor = bus.id;
+            try {
+                const r = await fetchWithTimeout(`${BACKEND_URL}/api/bus_state/${encodeURIComponent(bus.id)}`, { cache: 'no-store' }, 20000);
+                if (r.ok) {
+                    applyState(await r.json());
+                    setConn('online');
                 }
             } catch (err) {
-                // Silently bypass on failure
+                if (serverReady) setConn('offline');
+            } finally {
+                if (pollingFor === bus.id) pollingFor = null;
             }
-        }, 3000);
+        }
+
+        // --- 9. DEMO CONTROLS (simulates the GPS feed) ---
+        let demoBusy = false;
+        function renderDemoControls() {
+            const bus = activeBus();
+            const s = stateFor(bus);
+            const adv = document.getElementById('btnAdvance');
+            const rst = document.getElementById('btnReset');
+            const info = document.getElementById('demoStopInfo');
+            const atLast = !!s && s.current_stop_index >= s.stops.length - 1;
+            adv.disabled = demoBusy || !s || atLast;
+            rst.disabled = demoBusy;
+            adv.textContent = atLast ? 'At last stop' : 'Advance to next stop ▶';
+            info.textContent = s
+                ? `${bus.plate} · now at ${s.current_stop_name}` + (s.next_stop_name ? ` → next: ${s.next_stop_name}` : ' (end of route)')
+                : `${bus.plate} · loading…`;
+        }
+
+        async function demoAction(kind) {
+            if (demoBusy) return;
+            const bus = activeBus();
+            if (kind === 'reset' && !confirm(`Start a new trip for ${bus.plate}? Onboard goes back to 0 (old tickets are kept).`)) return;
+            demoBusy = true;
+            renderDemoControls();
+            const path = kind === 'advance' ? `/api/advance_stop/${encodeURIComponent(bus.id)}` : `/api/reset_trip/${encodeURIComponent(bus.id)}`;
+            const label = kind === 'advance' ? 'ADVANCE' : 'RESET';
+            try {
+                const r = await fetchWithTimeout(BACKEND_URL + path, { method: 'POST', cache: 'no-store' }, 45000);
+                let body = null;
+                try { body = await r.json(); } catch (e) { }
+                if (!r.ok) {
+                    addLog(`${label} failed on ${bus.plate}: ${errorDetail(body, r.status)}`, 'error');
+                } else {
+                    setConn('online');
+                    if (kind === 'advance') {
+                        if (body.moved) addLog(`GPS: ${bus.plate} left with ${body.onboard_departing} onboard, now at ${body.current_stop_name} (${body.onboard} onboard)`, 'ok');
+                        else addLog(`GPS: ${bus.plate} is already at the last stop (${body.current_stop_name})`, 'warn');
+                    } else {
+                        addLog(`TRIP RESET: ${bus.plate} new trip at ${body.current_stop_name}, capacity ${body.seat_capacity}`, 'ok');
+                    }
+                    applyState(body);
+                    if (step === 1 && body.bus_id === activeBus().id) {
+                        currentSourceIdx = defaultSourceIdx(activeBus());
+                        updateScreen();
+                    }
+                }
+            } catch (err) {
+                addLog(`${label} failed on ${bus.plate}: network error`, 'error');
+            } finally {
+                demoBusy = false;
+                renderDemoControls();
+            }
+        }
+
+        // --- 10. BACKGROUND POLLING + FLUSH TRIGGERS ---
+        setInterval(pollState, 3000); // selected bus, at every step
+        setInterval(() => { if (serverReady) warmPreflight(); }, 5 * 60 * 1000);
+        function onWake() { flushQueue(); pollState(); }
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') onWake(); });
+        window.addEventListener('focus', onWake);
+        window.addEventListener('online', onWake);
+        window.addEventListener('storage', e => { if (e.key === QUEUE_KEY) renderSync(); });
 
         initTable();
+        renderSync();
+        warmUp();
+        pollState();
+        flushQueue(); // resend anything left from a previous session
     </script>
 </body>
 
